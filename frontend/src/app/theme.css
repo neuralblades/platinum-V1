@@ -1,0 +1,52 @@
+/* Platinum Square Theme Colors */
+:root {
+  /* Primary Colors - Platinum/Silver */
+  --color-primary-50: #f9f9fa;
+  --color-primary-100: #f1f1f3;
+  --color-primary-200: #e4e5e9;
+  --color-primary-300: #d2d4db;
+  --color-primary-400: #b5b9c4;
+  --color-primary-500: #9299aa;
+  --color-primary-600: #767d8f;
+  --color-primary-700: #5e6476;
+  --color-primary-800: #4a4f5d;
+  --color-primary-900: #343842;
+
+  /* Secondary Colors - Dark Gray */
+  --color-secondary-50: #f5f6f7;
+  --color-secondary-100: #e6e8ea;
+  --color-secondary-200: #cfd2d7;
+  --color-secondary-300: #b0b5bd;
+  --color-secondary-400: #8c929d;
+  --color-secondary-500: #6e7482;
+  --color-secondary-600: #575c68;
+  --color-secondary-700: #444851;
+  --color-secondary-800: #343740;
+  --color-secondary-900: #282a32;
+
+  /* Accent Colors - Darker Platinum */
+  --color-accent-50: #f7f7f8;
+  --color-accent-100: #eeeef0;
+  --color-accent-200: #d9dadf;
+  --color-accent-300: #bbbdc6;
+  --color-accent-400: #9599a7;
+  --color-accent-500: #777b8a;
+  --color-accent-600: #5f6271;
+  --color-accent-700: #4b4d59;
+  --color-accent-800: #3a3c45;
+  --color-accent-900: #2c2d34;
+}
+
+/* Apply theme colors to common elements */
+a {
+  color: var(--color-primary-600);
+}
+
+a:hover {
+  color: var(--color-primary-700);
+}
+
+/*
+  Button styles are now handled by the Button component
+  See: src/components/ui/Button.tsx
+*/

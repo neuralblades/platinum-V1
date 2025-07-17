@@ -1,0 +1,45 @@
+services:
+  # Backend API Service
+  - type: web
+    name: platinum-square-backend
+    runtime: node
+    region: oregon
+    plan: free
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DB_HOST
+        value: your-mysql-host
+      - key: DB_USERNAME
+        value: your-mysql-username
+      - key: DB_PASSWORD
+        value: your-mysql-password
+      - key: DB_NAME
+        value: your-mysql-database
+      - key: DB_PORT
+        value: 3306
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGIN
+        value: https://platinum-square-frontend.onrender.com
+    healthCheckPath: /api/health
+
+  # Frontend Service
+  - type: web
+    name: platinum-square-frontend
+    runtime: node
+    region: oregon
+    plan: free
+    buildCommand: cd frontend && npm install && npm run build
+    startCommand: cd frontend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_URL
+        value: https://platinum-square-backend.onrender.com/api
+      - key: NEXT_PUBLIC_IMAGE_URL
+        value: https://platinum-square-backend.onrender.com/uploads
