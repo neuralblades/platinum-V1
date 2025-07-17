@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import supabase from '../../../../../lib/supabase';
+import supabase from '@/lib/supabase';
 import { randomBytes } from 'crypto';
 
 // POST /api/users/forgot-password

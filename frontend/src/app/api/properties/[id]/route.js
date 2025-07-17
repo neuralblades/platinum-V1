@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import supabase, { db } from '../../../../../lib/supabase';
+import { db } from '@/lib/supabase';
 
 // In-memory cache for individual properties
 const cache = new Map();

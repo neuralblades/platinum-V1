@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import supabase, { db } from '../../../../../lib/supabase';
+import { db } from '@/lib/supabase';
 
 // GET /api/testimonials/[id]
 export async function GET(request, { params }) {
@@ -13,13 +13,9 @@ export async function GET(request, { params }) {
       );
     }
 
-    const { data: testimonial, error } = await supabase
-      .from('testimonials')
-      .select('*')
-      .eq('id', parseInt(id))
-      .single();
+    const testimonial = await db.testimonials.getById(parseInt(id));
 
-    if (error || !testimonial) {
+    if (!testimonial) {
       return NextResponse.json(
         { success: false, message: 'Testimonial not found' },
         { status: 404 }
@@ -70,13 +66,8 @@ export async function PUT(request, { params }) {
     }
 
     // Check if testimonial exists
-    const { data: existingTestimonial, error: fetchError } = await supabase
-      .from('testimonials')
-      .select('id')
-      .eq('id', parseInt(id))
-      .single();
-
-    if (fetchError || !existingTestimonial) {
+    const existingTestimonial = await db.testimonials.getById(parseInt(id));
+    if (!existingTestimonial) {
       return NextResponse.json(
         { success: false, message: 'Testimonial not found' },
         { status: 404 }
@@ -103,16 +94,7 @@ export async function PUT(request, { params }) {
     }
 
     // Update the testimonial
-    const { data: updatedTestimonial, error: updateError } = await supabase
-      .from('testimonials')
-      .update(updateData)
-      .eq('id', parseInt(id))
-      .select()
-      .single();
-
-    if (updateError) {
-      throw updateError;
-    }
+    const updatedTestimonial = await db.testimonials.update(parseInt(id), updateData);
 
     // Transform response for frontend
     const transformedTestimonial = {
@@ -170,13 +152,8 @@ export async function DELETE(request, { params }) {
     }
 
     // Check if testimonial exists
-    const { data: existingTestimonial, error: fetchError } = await supabase
-      .from('testimonials')
-      .select('id')
-      .eq('id', parseInt(id))
-      .single();
-
-    if (fetchError || !existingTestimonial) {
+    const existingTestimonial = await db.testimonials.getById(parseInt(id));
+    if (!existingTestimonial) {
       return NextResponse.json(
         { success: false, message: 'Testimonial not found' },
         { status: 404 }
@@ -184,14 +161,7 @@ export async function DELETE(request, { params }) {
     }
 
     // Delete the testimonial
-    const { error: deleteError } = await supabase
-      .from('testimonials')
-      .delete()
-      .eq('id', parseInt(id));
-
-    if (deleteError) {
-      throw deleteError;
-    }
+    await db.testimonials.delete(parseInt(id));
 
     return NextResponse.json({
       success: true,
