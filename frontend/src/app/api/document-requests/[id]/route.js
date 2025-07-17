@@ -1,4 +1,4 @@
-import { initializeModels } from '../../../../../lib/models';
+import { db } from '@/lib/supabase';
 import { NextResponse } from 'next/server';
 
 // GET /api/document-requests/[id] - Get specific document request
@@ -6,11 +6,8 @@ export async function GET(request, context) {
   try {
     const params = await context.params;
     const id = params.id;
-    
-    
-    
 
-    const documentRequest = await DocumentRequest.findByPk(id);
+    const documentRequest = await db.documentRequests.getById(id);
 
     if (!documentRequest) {
       return NextResponse.json(
@@ -43,13 +40,10 @@ export async function PUT(request, context) {
     const params = await context.params;
     const id = params.id;
     const body = await request.json();
-    
-    
-    
 
-    const documentRequest = await DocumentRequest.findByPk(id);
-
-    if (!documentRequest) {
+    // Check if document request exists
+    const existingRequest = await db.documentRequests.getById(id);
+    if (!existingRequest) {
       return NextResponse.json(
         { success: false, message: 'Document request not found' },
         { status: 404 }
@@ -68,7 +62,7 @@ export async function PUT(request, context) {
 
     // Auto-set completedAt when status changes to completed
     if (updateData.status === 'completed' && !updateData.completedAt) {
-      updateData.completedAt = new Date();
+      updateData.completedAt = new Date().toISOString();
     }
 
     if (Object.keys(updateData).length === 0) {
@@ -78,11 +72,11 @@ export async function PUT(request, context) {
       );
     }
 
-    await documentRequest.update(updateData);
+    const updatedRequest = await db.documentRequests.update(id, updateData);
 
     return NextResponse.json({
       success: true,
-      data: documentRequest,
+      data: updatedRequest,
       message: 'Document request updated successfully'
     });
 
@@ -104,20 +98,17 @@ export async function DELETE(request, context) {
   try {
     const params = await context.params;
     const id = params.id;
-    
-    
-    
 
-    const documentRequest = await DocumentRequest.findByPk(id);
-
-    if (!documentRequest) {
+    // Check if document request exists
+    const existingRequest = await db.documentRequests.getById(id);
+    if (!existingRequest) {
       return NextResponse.json(
         { success: false, message: 'Document request not found' },
         { status: 404 }
       );
     }
 
-    await documentRequest.destroy();
+    await db.documentRequests.delete(id);
 
     return NextResponse.json({
       success: true,

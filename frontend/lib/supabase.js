@@ -552,5 +552,176 @@ export const db = {
       if (error) throw error;
       return data;
     }
-  }
+  },
+
+  // Document Requests
+  documentRequests: {
+    async getAll() {
+      const { data, error } = await supabase
+        .from('document_requests')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    },
+
+    async getById(id) {
+      const { data, error } = await supabase
+        .from('document_requests')
+        .select('*')
+        .eq('id', id)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+
+    async create(requestData) {
+      const { data, error } = await supabase
+        .from('document_requests')
+        .insert(requestData)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+
+    async update(id, updateData) {
+      const { data, error } = await supabase
+        .from('document_requests')
+        .update(updateData)
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+
+    async delete(id) {
+      const { error } = await supabase
+        .from('document_requests')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      return { success: true };
+    }
+  },
+
+  // Messages
+  messages: {
+    async getAll() {
+      const { data, error } = await supabase
+        .from('messages')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    },
+
+    async getById(id) {
+      const { data, error } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('id', id)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+
+    async create(messageData) {
+      const { data, error } = await supabase
+        .from('messages')
+        .insert(messageData)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+
+    async update(id, updateData) {
+      const { data, error } = await supabase
+        .from('messages')
+        .update(updateData)
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+
+    async delete(id) {
+      const { error } = await supabase
+        .from('messages')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      return { success: true };
+    }
+  },
+
+  // Offplan Inquiries
+  offplanInquiries: {
+    async getAll() {
+      const { data, error } = await supabase
+        .from('offplan_inquiries')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    },
+
+    async getById(id) {
+      const { data, error } = await supabase
+        .from('offplan_inquiries')
+        .select('*')
+        .eq('id', id)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+
+    async create(inquiryData) {
+      const { data, error } = await supabase
+        .from('offplan_inquiries')
+        .insert(inquiryData)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+
+    async update(id, updateData) {
+      const { data, error } = await supabase
+        .from('offplan_inquiries')
+        .update(updateData)
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+
+    async delete(id) {
+      const { error } = await supabase
+        .from('offplan_inquiries')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      return { success: true };
+    }
+  },
 };

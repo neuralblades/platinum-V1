@@ -1,4 +1,4 @@
-import { initializeModels } from '../../../../../lib/models';
+import { db } from '@/lib/supabase';
 import { NextResponse } from 'next/server';
 
 // GET /api/inquiries/[id] - Get specific inquiry
@@ -6,25 +6,30 @@ export async function GET(request, context) {
   try {
     const params = await context.params;
     const id = params.id;
-    
-    
-    
 
-    const inquiry = await Inquiry.findByPk(id, {
-      include: [
-        {
-          model: db.Property,
-          as: 'property',
-          attributes: ['id', 'title', 'price', 'location']
-        }
-      ]
-    });
+    // Get inquiry with property details using Supabase join
+    const { data: inquiry, error } = await supabase
+      .from('inquiries')
+      .select(`
+        *,
+        property:properties(
+          id,
+          title,
+          price,
+          location
+        )
+      `)
+      .eq('id', id)
+      .single();
 
-    if (!inquiry) {
-      return NextResponse.json(
-        { success: false, message: 'Inquiry not found' },
-        { status: 404 }
-      );
+    if (error) {
+      if (error.code === 'PGRST116') { // No rows returned
+        return NextResponse.json(
+          { success: false, message: 'Inquiry not found' },
+          { status: 404 }
+        );
+      }
+      throw error;
     }
 
     return NextResponse.json({
@@ -51,13 +56,10 @@ export async function PUT(request, context) {
     const params = await context.params;
     const id = params.id;
     const body = await request.json();
-    
-    
-    
 
-    const inquiry = await Inquiry.findByPk(id);
-
-    if (!inquiry) {
+    // Check if inquiry exists first
+    const existingInquiry = await db.inquiries.getById(id);
+    if (!existingInquiry) {
       return NextResponse.json(
         { success: false, message: 'Inquiry not found' },
         { status: 404 }
@@ -81,11 +83,11 @@ export async function PUT(request, context) {
       );
     }
 
-    await inquiry.update(updateData);
+    const updatedInquiry = await db.inquiries.update(id, updateData);
 
     return NextResponse.json({
       success: true,
-      data: inquiry,
+      data: updatedInquiry,
       message: 'Inquiry updated successfully'
     });
 
@@ -107,20 +109,17 @@ export async function DELETE(request, context) {
   try {
     const params = await context.params;
     const id = params.id;
-    
-    
-    
 
-    const inquiry = await Inquiry.findByPk(id);
-
-    if (!inquiry) {
+    // Check if inquiry exists first
+    const existingInquiry = await db.inquiries.getById(id);
+    if (!existingInquiry) {
       return NextResponse.json(
         { success: false, message: 'Inquiry not found' },
         { status: 404 }
       );
     }
 
-    await inquiry.destroy();
+    await db.inquiries.delete(id);
 
     return NextResponse.json({
       success: true,

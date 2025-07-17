@@ -1,4 +1,4 @@
-import { initializeModels } from '../../../../../lib/models';
+import { db } from '@/lib/supabase';
 import { NextResponse } from 'next/server';
 
 // GET /api/offplan-inquiries/[id] - Get specific offplan inquiry
@@ -6,11 +6,8 @@ export async function GET(request, context) {
   try {
     const params = await context.params;
     const id = params.id;
-    
-    
-    
 
-    const inquiry = await OffplanInquiry.findByPk(id);
+    const inquiry = await db.offplanInquiries.getById(id);
 
     if (!inquiry) {
       return NextResponse.json(
@@ -43,13 +40,10 @@ export async function PUT(request, context) {
     const params = await context.params;
     const id = params.id;
     const body = await request.json();
-    
-    
-    
 
-    const inquiry = await OffplanInquiry.findByPk(id);
-
-    if (!inquiry) {
+    // Check if inquiry exists first
+    const existingInquiry = await db.offplanInquiries.getById(id);
+    if (!existingInquiry) {
       return NextResponse.json(
         { success: false, message: 'Offplan inquiry not found' },
         { status: 404 }
@@ -73,11 +67,11 @@ export async function PUT(request, context) {
       );
     }
 
-    await inquiry.update(updateData);
+    const updatedInquiry = await db.offplanInquiries.update(id, updateData);
 
     return NextResponse.json({
       success: true,
-      data: inquiry,
+      data: updatedInquiry,
       message: 'Offplan inquiry updated successfully'
     });
 
@@ -99,20 +93,17 @@ export async function DELETE(request, context) {
   try {
     const params = await context.params;
     const id = params.id;
-    
-    
-    
 
-    const inquiry = await OffplanInquiry.findByPk(id);
-
-    if (!inquiry) {
+    // Check if inquiry exists first
+    const existingInquiry = await db.offplanInquiries.getById(id);
+    if (!existingInquiry) {
       return NextResponse.json(
         { success: false, message: 'Offplan inquiry not found' },
         { status: 404 }
       );
     }
 
-    await inquiry.destroy();
+    await db.offplanInquiries.delete(id);
 
     return NextResponse.json({
       success: true,

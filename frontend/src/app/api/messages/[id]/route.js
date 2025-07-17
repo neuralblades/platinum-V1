@@ -1,4 +1,4 @@
-import { initializeModels } from '../../../../../lib/models';
+import { db } from '@/lib/supabase';
 import { NextResponse } from 'next/server';
 
 // GET /api/messages/[id] - Get specific message
@@ -6,11 +6,8 @@ export async function GET(request, context) {
   try {
     const params = await context.params;
     const id = params.id;
-    
-    
-    
 
-    const message = await Message.findByPk(id);
+    const message = await db.messages.getById(id);
 
     if (!message) {
       return NextResponse.json(
@@ -43,13 +40,10 @@ export async function PUT(request, context) {
     const params = await context.params;
     const id = params.id;
     const body = await request.json();
-    
-    
-    
 
-    const message = await Message.findByPk(id);
-
-    if (!message) {
+    // Check if message exists first
+    const existingMessage = await db.messages.getById(id);
+    if (!existingMessage) {
       return NextResponse.json(
         { success: false, message: 'Message not found' },
         { status: 404 }
@@ -68,7 +62,7 @@ export async function PUT(request, context) {
 
     // Auto-set repliedAt when status changes to replied
     if (updateData.status === 'replied' && !updateData.repliedAt) {
-      updateData.repliedAt = new Date();
+      updateData.repliedAt = new Date().toISOString();
     }
 
     if (Object.keys(updateData).length === 0) {
@@ -78,11 +72,11 @@ export async function PUT(request, context) {
       );
     }
 
-    await message.update(updateData);
+    const updatedMessage = await db.messages.update(id, updateData);
 
     return NextResponse.json({
       success: true,
-      data: message,
+      data: updatedMessage,
       message: 'Message updated successfully'
     });
 
@@ -104,20 +98,17 @@ export async function DELETE(request, context) {
   try {
     const params = await context.params;
     const id = params.id;
-    
-    
-    
 
-    const message = await Message.findByPk(id);
-
-    if (!message) {
+    // Check if message exists first
+    const existingMessage = await db.messages.getById(id);
+    if (!existingMessage) {
       return NextResponse.json(
         { success: false, message: 'Message not found' },
         { status: 404 }
       );
     }
 
-    await message.destroy();
+    await db.messages.delete(id);
 
     return NextResponse.json({
       success: true,
