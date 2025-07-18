@@ -1,5 +1,3 @@
-const jwt = require('jsonwebtoken');
-
 // CORS middleware
 const cors = (req, res, next) => {
   const allowedOrigins = process.env.NODE_ENV === 'production'
