@@ -10,8 +10,33 @@ import { clearServerCache } from '@/utils/cacheUtils';
 import Button from '@/components/ui/Button';
 import StatusBadge from '@/components/ui/StatusBadge';
 
+// Types
+interface Property {
+  id: number;
+  title: string;
+  location: string;
+  price: number;
+  featured: boolean;
+  createdAt: string;
+}
+
+interface Inquiry {
+  id: number;
+  name: string;
+  email: string;
+  status?: string;
+  createdAt: string;
+}
+
+interface StatCardProps {
+  title: string;
+  value: number;
+  icon: React.ReactNode;
+  bgColor: string;
+}
+
 // Dashboard Stat Card Component
-const StatCard = ({ title, value, icon, bgColor }: { title: string; value: number; icon: React.ReactNode; bgColor: string }) => (
+const StatCard = ({ title, value, icon, bgColor }: StatCardProps) => (
   <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 flex items-center hover:shadow-md transition-shadow duration-300">
     <div className={`rounded-full p-3 mr-4 ${bgColor}`}>
       {icon}
@@ -31,9 +56,9 @@ export default function AdminDashboard() {
     offplanInquiries: 0,
     featuredProperties: 0,
   });
-  const [recentProperties, setRecentProperties] = useState<any[]>([]);
-  const [recentInquiries, setRecentInquiries] = useState<any[]>([]);
-  const [recentOffplanInquiries, setRecentOffplanInquiries] = useState<any[]>([]);
+  const [recentProperties, setRecentProperties] = useState<Property[]>([]);
+  const [recentInquiries, setRecentInquiries] = useState<Inquiry[]>([]);
+  const [recentOffplanInquiries, setRecentOffplanInquiries] = useState<Inquiry[]>([]);
   const [loading, setLoading] = useState(true);
   const [clearingCache, setClearingCache] = useState(false);
   const [cacheMessage, setCacheMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
@@ -77,7 +102,7 @@ export default function AdminDashboard() {
           setStats(prev => ({
             ...prev,
             properties: propertiesResponse.total || propertiesResponse.properties.length,
-            featuredProperties: propertiesResponse.properties.filter((p: any) => p.featured).length,
+            featuredProperties: propertiesResponse.properties.filter((p: Property) => p.featured).length,
           }));
 
           // Get 5 most recent properties
@@ -152,7 +177,7 @@ export default function AdminDashboard() {
           Cache Management
         </h2>
         <p className="mb-4 text-gray-600">
-          If you've made changes to the website content and they're not appearing immediately, you can clear the server cache to force an update.
+          If you&apos;ve made changes to the website content and they&apos;re not appearing immediately, you can clear the server cache to force an update.
         </p>
 
         {cacheMessage && (

@@ -139,7 +139,7 @@ export default function AboutPage() {
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-4 text-center">Client-Focused</h3>
                 <p className="text-gray-700 text-center">
-                  We put our clients' needs first, providing personalized service and tailored solutions to meet their unique requirements.
+                  We put our clients needs first, providing personalized service and tailored solutions to meet their unique requirements.
                 </p>
               </div>
             </div>

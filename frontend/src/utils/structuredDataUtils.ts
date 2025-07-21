@@ -56,9 +56,9 @@ export const generatePropertySchema = (property: Property) => {
     '@type': 'RealEstateListing',
     name: property.title,
     description: property.description,
-    image: getFullImageUrl(property.mainImage),
+    image: getFullImageUrl(property.main_image),
     url: `${organizationData.url}/properties/${property.id}`,
-    datePosted: property.createdAt,
+    datePosted: property.created_at,
     address: {
       '@type': 'PostalAddress',
       addressLocality: property.location,
