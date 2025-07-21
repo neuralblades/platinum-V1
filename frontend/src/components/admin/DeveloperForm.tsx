@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { getDeveloperById, createDeveloper, updateDeveloper } from '@/services/developerService';
@@ -8,7 +8,6 @@ import { useToast } from '@/contexts/ToastContext';
 import { getFullImageUrl } from '@/utils/imageUtils';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import Button from '@/components/ui/Button';
-import Alert from '@/components/ui/Alert';
 
 interface DeveloperFormProps {
   developerId?: string;
@@ -30,19 +29,13 @@ export default function DeveloperForm({ developerId, isEdit = false }: Developer
     headquarters: '',
     featured: false,
   });
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (isEdit && developerId) {
-      fetchDeveloperData();
-    }
-  }, [isEdit, developerId]);
+  const fetchDeveloperData = useCallback(async () => {
+    if (!developerId) return;
 
-  const fetchDeveloperData = async () => {
     try {
       setLoading(true);
-      const response = await getDeveloperById(developerId!);
+      const response = await getDeveloperById(developerId);
       const developer = response.data;
 
       setFormData({
@@ -68,7 +61,13 @@ export default function DeveloperForm({ developerId, isEdit = false }: Developer
       showToast('Failed to load developer data', 'error');
       setLoading(false);
     }
-  };
+  }, [developerId, showToast]);
+
+  useEffect(() => {
+    if (isEdit && developerId) {
+      fetchDeveloperData();
+    }
+  }, [isEdit, developerId, fetchDeveloperData]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target as HTMLInputElement;
@@ -268,7 +267,6 @@ export default function DeveloperForm({ developerId, isEdit = false }: Developer
                   fill
                   className="object-contain"
                   sizes="100%"
-
                 />
               </div>
             )}
@@ -294,7 +292,6 @@ export default function DeveloperForm({ developerId, isEdit = false }: Developer
                   fill
                   className="object-cover"
                   sizes="100%"
-
                 />
               </div>
             )}
@@ -320,9 +317,6 @@ export default function DeveloperForm({ developerId, isEdit = false }: Developer
           {isEdit ? 'Update Developer' : 'Create Developer'}
         </Button>
       </div>
-
-      {error && <Alert type="error">{error}</Alert>}
-      {success && <Alert type="success">{success}</Alert>}
     </form>
   );
 }

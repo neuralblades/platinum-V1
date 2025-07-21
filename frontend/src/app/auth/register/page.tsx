@@ -104,6 +104,17 @@ export default function RegisterPage() {
             <p className="text-sm text-gray-500">Already have an account? <Link href="/auth/login" className="text-gray-700 font-medium hover:underline">Sign In</Link></p>
           </div>
 
+          {/* Error Message */}
+          {formError && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+              <div className="flex items-center">
+                <svg className="h-4 w-4 text-red-500 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p className="text-sm text-red-700">{formError}</p>
+              </div>
+            </div>
+          )}
 
           {/* Google Sign In Button */}
           <div className="mb-6">

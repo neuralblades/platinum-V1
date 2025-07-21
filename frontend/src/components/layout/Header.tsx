@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePathname } from 'next/navigation';
 
@@ -18,15 +18,12 @@ const Header = () => {
   // Use the auth context instead of local state
   const { user, logout } = useAuth();
 
-  // Listen to scroll events and update state
-  const handleScroll = () => {
+  // Use useCallback to memoize the handleScroll function
+  const handleScroll = useCallback(() => {
     const scrollThreshold = 50;
-    if (window.scrollY > scrollThreshold && !isScrolled) {
-      setIsScrolled(true);
-    } else if (window.scrollY <= scrollThreshold && isScrolled) {
-      setIsScrolled(false);
-    }
-  };
+    const scrolled = window.scrollY > scrollThreshold;
+    setIsScrolled(scrolled);
+  }, []);
 
   // Determine the header background class based on page and scroll position
   const headerBgClass = isHomePage
@@ -44,7 +41,7 @@ const Header = () => {
     if (typeof window === 'undefined') return;
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [isScrolled]);
+  }, [handleScroll]);
 
   return (
     <header

@@ -1,4 +1,3 @@
-import { db } from '@/lib/supabase';
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 
@@ -7,8 +6,13 @@ export async function GET(request, context) {
   try {
     const params = await context.params;
     const id = params.id;
+    
+    
+    
 
-    const user = await db.users.getById(id);
+    const user = await User.findByPk(id, {
+      attributes: { exclude: ['password'] } // Don't return password
+    });
 
     if (!user) {
       return NextResponse.json(
@@ -17,12 +21,9 @@ export async function GET(request, context) {
       );
     }
 
-    // Remove password from response
-    const { password, ...userWithoutPassword } = user;
-
     return NextResponse.json({
       success: true,
-      data: userWithoutPassword
+      data: user
     });
 
   } catch (error) {
@@ -44,10 +45,13 @@ export async function PUT(request, context) {
     const params = await context.params;
     const id = params.id;
     const body = await request.json();
+    
+    
+    
 
-    // Check if user exists
-    const existingUser = await db.users.getById(id);
-    if (!existingUser) {
+    const user = await User.findByPk(id);
+
+    if (!user) {
       return NextResponse.json(
         { success: false, message: 'User not found' },
         { status: 404 }
@@ -78,30 +82,30 @@ export async function PUT(request, context) {
     }
 
     // Check for email uniqueness if email is being updated
-    if (updateData.email && updateData.email !== existingUser.email) {
-      try {
-        const duplicateUser = await db.users.getByEmail(updateData.email);
-        if (duplicateUser && duplicateUser.id !== parseInt(id)) {
-          return NextResponse.json(
-            {
-              success: false,
-              message: 'User with this email already exists'
-            },
-            { status: 409 }
-          );
+    if (updateData.email && updateData.email !== user.email) {
+      const existingUser = await User.findOne({
+        where: { 
+          email: updateData.email,
+          id: { [db.Sequelize.Op.ne]: id } // Exclude current user
         }
-      } catch (error) {
-        // If getByEmail throws an error (user not found), that's good - continue
-        if (!error.message?.includes('not found')) {
-          throw error;
-        }
+      });
+
+      if (existingUser) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: 'User with this email already exists'
+          },
+          { status: 409 }
+        );
       }
     }
 
-    const updatedUser = await db.users.update(id, updateData);
+    await user.update(updateData);
 
     // Remove password from response
-    const { password, ...userResponse } = updatedUser;
+    const userResponse = user.toJSON();
+    delete userResponse.password;
 
     return NextResponse.json({
       success: true,
@@ -112,8 +116,21 @@ export async function PUT(request, context) {
   } catch (error) {
     console.error('User UPDATE Error:', error);
     
-    // Handle Supabase unique constraint errors
-    if (error.code === '23505') { // Unique constraint violation
+    if (error.name === 'SequelizeValidationError') {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Validation error',
+          errors: error.errors.map(err => ({
+            field: err.path,
+            message: err.message
+          }))
+        },
+        { status: 400 }
+      );
+    }
+
+    if (error.name === 'SequelizeUniqueConstraintError') {
       return NextResponse.json(
         {
           success: false,
@@ -140,10 +157,13 @@ export async function PATCH(request, context) {
     const params = await context.params;
     const id = params.id;
     const body = await request.json();
+    
+    
+    
 
-    // Check if user exists
-    const existingUser = await db.users.getById(id);
-    if (!existingUser) {
+    const user = await User.findByPk(id);
+
+    if (!user) {
       return NextResponse.json(
         { success: false, message: 'User not found' },
         { status: 404 }
@@ -167,10 +187,11 @@ export async function PATCH(request, context) {
       );
     }
 
-    const updatedUser = await db.users.update(id, updateData);
+    await user.update(updateData);
 
     // Remove password from response
-    const { password, ...userResponse } = updatedUser;
+    const userResponse = user.toJSON();
+    delete userResponse.password;
 
     return NextResponse.json({
       success: true,
@@ -197,10 +218,13 @@ export async function DELETE(request, context) {
   try {
     const params = await context.params;
     const id = params.id;
+    
+    
+    
 
-    // Check if user exists
-    const existingUser = await db.users.getById(id);
-    if (!existingUser) {
+    const user = await User.findByPk(id);
+
+    if (!user) {
       return NextResponse.json(
         { success: false, message: 'User not found' },
         { status: 404 }
@@ -208,14 +232,14 @@ export async function DELETE(request, context) {
     }
 
     // Prevent deletion of admin users (optional safety check)
-    if (existingUser.role === 'admin') {
+    if (user.role === 'admin') {
       return NextResponse.json(
         { success: false, message: 'Cannot delete admin users' },
         { status: 403 }
       );
     }
 
-    await db.users.delete(id);
+    await user.destroy();
 
     return NextResponse.json({
       success: true,

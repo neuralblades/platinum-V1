@@ -2,9 +2,6 @@
  * Utility functions for image optimization
  */
 
-// Default image quality for optimized images
-const DEFAULT_QUALITY = 80;
-
 // Default placeholder for blurred images
 const BLUR_PLACEHOLDER = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+P+/HgAEtAJJXF+wHAAAAABJRU5ErkJggg==';
 

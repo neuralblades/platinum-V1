@@ -2,9 +2,9 @@
 
 import { useState, FormEvent, ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { createTeamMember } from '@/services/teamService';
 import Button from '@/components/ui/Button';
-// import AdminLayout from '@/components/admin/AdminLayout';
 import { FaArrowLeft, FaPlus, FaTimes } from 'react-icons/fa';
 
 export default function AddTeamMemberPage() {
@@ -249,10 +249,12 @@ export default function AddTeamMemberPage() {
                   <div className="mt-4">
                     <p className="text-sm text-gray-600 mb-2">Preview:</p>
                     <div className="relative h-40 w-40 rounded-lg overflow-hidden">
-                      <img
+                      <Image
                         src={imagePreview}
                         alt="Preview"
-                        className="object-cover w-full h-full"
+                        className="object-cover"
+                        fill
+                        sizes="160px"
                       />
                     </div>
                   </div>

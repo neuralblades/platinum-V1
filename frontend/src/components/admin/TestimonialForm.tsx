@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { getTestimonialById, createTestimonial, updateTestimonial } from '@/services/testimonialService';
@@ -30,16 +30,12 @@ export default function TestimonialForm({ testimonialId, isEdit = false }: Testi
     order: 0,
   });
 
-  useEffect(() => {
-    if (isEdit && testimonialId) {
-      fetchTestimonialData();
-    }
-  }, [isEdit, testimonialId]);
-
-  const fetchTestimonialData = async () => {
+  const fetchTestimonialData = useCallback(async () => {
+    if (!testimonialId) return;
+    
     try {
       setLoading(true);
-      const response = await getTestimonialById(testimonialId!);
+      const response = await getTestimonialById(testimonialId);
       const testimonial = response.testimonial;
 
       setFormData({
@@ -61,7 +57,13 @@ export default function TestimonialForm({ testimonialId, isEdit = false }: Testi
       setError('Failed to load testimonial data');
       setLoading(false);
     }
-  };
+  }, [testimonialId]);
+
+  useEffect(() => {
+    if (isEdit && testimonialId) {
+      fetchTestimonialData();
+    }
+  }, [isEdit, testimonialId, fetchTestimonialData]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target as HTMLInputElement;

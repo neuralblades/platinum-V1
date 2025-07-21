@@ -3,7 +3,6 @@
 import { Property } from '@/services/propertyService';
 import { generatePropertySchema, generateBreadcrumbSchema } from '@/utils/structuredDataUtils';
 import Head from 'next/head';
-import Link from 'next/link';
 
 export default function PropertyDetailView({ property }: { property: Property }) {
   // Generate structured data for the property

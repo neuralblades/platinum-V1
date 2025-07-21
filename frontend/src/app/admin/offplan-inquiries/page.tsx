@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { getAllOffplanInquiries, updateOffplanInquiryStatus, OffplanInquiry } from '@/services/offplanInquiryService';
 import { useAuth } from '@/contexts/AuthContext';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { getFullImageUrl } from '@/utils/imageUtils';
 import StatusBadge from '@/components/ui/StatusBadge';
@@ -118,7 +119,7 @@ export default function OffplanInquiriesPage() {
 
       // If this property hasn't been seen yet, or if this inquiry has a property image and the existing one doesn't
       if (!propertyGroups[propertyId] ||
-          (inquiry.property?.mainImage && !propertyGroups[propertyId].property?.mainImage)) {
+          (inquiry.property?.main_image && !propertyGroups[propertyId].property?.main_image)) {
         propertyGroups[propertyId] = inquiry;
       }
     });
@@ -278,9 +279,9 @@ export default function OffplanInquiriesPage() {
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex items-center">
-                        {inquiry.property?.mainImage ? (
-                          <img
-                            src={getFullImageUrl(inquiry.property.mainImage)}
+                        {inquiry.property?.main_image ? (
+                          <Image
+                            src={getFullImageUrl(inquiry.property.main_image)}
                             alt={inquiry.propertyTitle || 'Property'}
                             className="w-10 h-10 rounded-lg object-cover mr-3 shadow-sm border border-gray-100"
                             onError={(e) => e.currentTarget.src = '/images/default-property.jpg'}
@@ -425,10 +426,10 @@ export default function OffplanInquiriesPage() {
 
                 {selectedInquiry.property ? (
                   <>
-                    {selectedInquiry.property.mainImage && (
+                    {selectedInquiry.property.main_image && (
                       <div className="mb-4 overflow-hidden rounded-lg shadow-md border border-gray-100">
-                        <img
-                          src={getFullImageUrl(selectedInquiry.property.mainImage)}
+                        <Image
+                          src={getFullImageUrl(selectedInquiry.property.main_image)}
                           alt={selectedInquiry.property.title || 'Property'}
                           className="w-full h-48 object-cover hover:scale-105 transition-transform duration-500"
                           onError={(e) => e.currentTarget.src = '/images/default-property.jpg'}

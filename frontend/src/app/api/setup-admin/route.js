@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 
 // POST /api/setup-admin - Create initial admin user
-export async function POST(request) {
+export async function POST() {
   try {
     // Check if admin already exists
     const { data: existingAdmin, error: checkError } = await supabase
@@ -28,7 +28,7 @@ export async function POST(request) {
     const saltRounds = 12;
     const hashedPassword = await bcrypt.hash('admin123', saltRounds);
 
-    const { data: adminUser, error: createError } = await supabase
+    const { error: createError } = await supabase
       .from('users')
       .insert({
         name: 'Admin User',

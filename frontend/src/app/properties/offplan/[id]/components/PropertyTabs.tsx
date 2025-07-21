@@ -84,7 +84,7 @@ export default function PropertyTabs({ property, developer }: Props) {
       <TabGroup onChange={setActiveTab}>
         <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8">
           <TabList className="flex overflow-x-auto scrollbar-hide">
-            {tabs.map((tab, index) => (
+            {tabs.map((tab) => (
               <Tab
                 key={tab.name}
                 className={({ selected }) =>

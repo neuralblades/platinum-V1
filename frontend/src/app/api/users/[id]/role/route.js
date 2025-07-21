@@ -1,4 +1,3 @@
-import { db } from '@/lib/supabase';
 import { NextResponse } from 'next/server';
 
 // PATCH /api/users/[id]/role - Update user role (admin only)
@@ -7,10 +6,13 @@ export async function PATCH(request, context) {
     const params = await context.params;
     const id = params.id;
     const body = await request.json();
+    
+    
+    
 
-    // Check if user exists
-    const existingUser = await db.users.getById(id);
-    if (!existingUser) {
+    const user = await User.findByPk(id);
+
+    if (!user) {
       return NextResponse.json(
         { success: false, message: 'User not found' },
         { status: 404 }
@@ -35,10 +37,11 @@ export async function PATCH(request, context) {
     }
 
     // Update user role
-    const updatedUser = await db.users.update(id, { role });
+    await user.update({ role });
 
     // Remove password from response
-    const { password, ...userResponse } = updatedUser;
+    const userResponse = user.toJSON();
+    delete userResponse.password;
 
     return NextResponse.json({
       success: true,

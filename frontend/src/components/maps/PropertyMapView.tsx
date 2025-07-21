@@ -31,11 +31,14 @@ const PropertyMapView = ({ properties, onPropertySelect, selectedProperty }: Pro
   useEffect(() => {
     const loadMap = async () => {
       try {
+        setIsLoading(true);
         await loadGoogleMapsApi();
         setMapLoaded(true);
       } catch (error) {
         console.error('Error loading Google Maps API:', error);
         setMapError('Failed to load Google Maps');
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -105,99 +108,104 @@ const PropertyMapView = ({ properties, onPropertySelect, selectedProperty }: Pro
 
     // Process each property
     const createMarkers = async () => {
-      for (const property of properties) {
-        let position: google.maps.LatLngLiteral;
+      setIsLoading(true);
+      try {
+        for (const property of properties) {
+          let position: google.maps.LatLngLiteral;
 
-        // If property already has coordinates, use them
-        if (property.latitude && property.longitude) {
-          position = { lat: property.latitude, lng: property.longitude };
-        } else {
-          // Otherwise geocode the location
-          try {
-            const searchAddress = property.address ?
-              `${property.address}, ${property.location}` :
-              property.location;
+          // If property already has coordinates, use them
+          if (property.latitude && property.longitude) {
+            position = { lat: property.latitude, lng: property.longitude };
+          } else {
+            // Otherwise geocode the location
+            try {
+              const searchAddress = property.address ?
+                `${property.address}, ${property.location}` :
+                property.location;
 
-            const results = await new Promise<google.maps.GeocoderResult[]>((resolve, reject) => {
-              geocoder.geocode({ address: searchAddress }, (results, status) => {
-                if (status === 'OK' && results && results.length > 0) {
-                  resolve(results);
-                } else {
-                  reject(status);
-                }
+              const results = await new Promise<google.maps.GeocoderResult[]>((resolve, reject) => {
+                geocoder.geocode({ address: searchAddress }, (results, status) => {
+                  if (status === 'OK' && results && results.length > 0) {
+                    resolve(results);
+                  } else {
+                    reject(status);
+                  }
+                });
               });
-            });
 
-            position = {
-              lat: results[0].geometry.location.lat(),
-              lng: results[0].geometry.location.lng()
-            };
-          } catch (error) {
-            console.error(`Geocoding failed for ${property.title}:`, error);
-            continue;
+              position = {
+                lat: results[0].geometry.location.lat(),
+                lng: results[0].geometry.location.lng()
+              };
+            } catch (error) {
+              console.error(`Geocoding failed for ${property.title}:`, error);
+              continue;
+            }
           }
+
+          // Create marker
+          const marker = new window.google.maps.Marker({
+            position,
+            map,
+            title: property.title,
+            icon: {
+              path: 'M12,2C8.13,2,5,5.13,5,9c0,5.25,7,13,7,13s7-7.75,7-13C19,5.13,15.87,2,12,2z M12,11.5c-1.38,0-2.5-1.12-2.5-2.5s1.12-2.5,2.5-2.5s2.5,1.12,2.5,2.5S13.38,11.5,12,11.5z',
+              fillColor: '#3B82F6',
+              fillOpacity: 1,
+              strokeColor: '#FFFFFF',
+              strokeWeight: 2,
+              scale: 1.6,
+              anchor: new google.maps.Point(12, 22),
+              labelOrigin: new google.maps.Point(12, 9)
+            },
+            optimized: true,
+            zIndex: 1
+          }) as PropertyMarker;
+
+          // Store property data with marker
+          marker.propertyData = property;
+
+          // Add click event
+          marker.addListener('click', () => {
+            onPropertySelect(property);
+          });
+
+          newMarkers.push(marker);
+          bounds.extend(position);
         }
 
-        // Create marker
-        const marker = new window.google.maps.Marker({
-          position,
-          map,
-          title: property.title,
-          icon: {
-            path: 'M12,2C8.13,2,5,5.13,5,9c0,5.25,7,13,7,13s7-7.75,7-13C19,5.13,15.87,2,12,2z M12,11.5c-1.38,0-2.5-1.12-2.5-2.5s1.12-2.5,2.5-2.5s2.5,1.12,2.5,2.5S13.38,11.5,12,11.5z',
-            fillColor: '#3B82F6',
-            fillOpacity: 1,
-            strokeColor: '#FFFFFF',
-            strokeWeight: 2,
-            scale: 1.6,
-            anchor: new google.maps.Point(12, 22),
-            labelOrigin: new google.maps.Point(12, 9)
-          },
-          optimized: true,
-          zIndex: 1
-        }) as PropertyMarker;
+        // Fit map to show all markers
+        if (newMarkers.length > 0) {
+          // Add padding to bounds
+          const ne = bounds.getNorthEast();
+          const sw = bounds.getSouthWest();
+          const latSpan = ne.lat() - sw.lat();
+          const lngSpan = ne.lng() - sw.lng();
 
-        // Store property data with marker
-        marker.propertyData = property;
+          bounds.extend(new google.maps.LatLng(ne.lat() + latSpan * 0.2, ne.lng() + lngSpan * 0.2));
+          bounds.extend(new google.maps.LatLng(sw.lat() - latSpan * 0.2, sw.lng() - lngSpan * 0.2));
 
-        // Add click event
-        marker.addListener('click', () => {
-          onPropertySelect(property);
-        });
+          map.fitBounds(bounds);
 
-        newMarkers.push(marker);
-        bounds.extend(position);
+          // Adjust zoom level if needed
+          google.maps.event.addListenerOnce(map, 'bounds_changed', () => {
+            const zoom = map.getZoom() || 12;
+
+            if (newMarkers.length === 1) {
+              map.setZoom(14);
+            } else if (zoom > 15) {
+              map.setZoom(14);
+            } else if (zoom < 8) {
+              map.setZoom(9);
+            }
+          });
+        }
+
+        // Store markers in ref
+        markersRef.current = newMarkers;
+      } finally {
+        setIsLoading(false);
       }
-
-      // Fit map to show all markers
-      if (newMarkers.length > 0) {
-        // Add padding to bounds
-        const ne = bounds.getNorthEast();
-        const sw = bounds.getSouthWest();
-        const latSpan = ne.lat() - sw.lat();
-        const lngSpan = ne.lng() - sw.lng();
-
-        bounds.extend(new google.maps.LatLng(ne.lat() + latSpan * 0.2, ne.lng() + lngSpan * 0.2));
-        bounds.extend(new google.maps.LatLng(sw.lat() - latSpan * 0.2, sw.lng() - lngSpan * 0.2));
-
-        map.fitBounds(bounds);
-
-        // Adjust zoom level if needed
-        google.maps.event.addListenerOnce(map, 'bounds_changed', () => {
-          const zoom = map.getZoom() || 12;
-
-          if (newMarkers.length === 1) {
-            map.setZoom(14);
-          } else if (zoom > 15) {
-            map.setZoom(14);
-          } else if (zoom < 8) {
-            map.setZoom(9);
-          }
-        });
-      }
-
-      // Store markers in ref
-      markersRef.current = newMarkers;
     };
 
     createMarkers();

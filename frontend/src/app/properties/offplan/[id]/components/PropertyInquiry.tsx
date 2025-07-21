@@ -108,7 +108,7 @@ export default function PropertyInquiry({ property, propertyId }: Props) {
               The best deals are our expertise – register now.
             </h2>
             <p className="text-lg mb-6 opacity-90">
-              Partner with Dubai's Leading Real Estate Agency Since 2008. Share your details, and our off-plan property expert will call you back within just 55 seconds.
+              Partner with Dubai&quot; Leading Real Estate Agency Since 2008. Share your details, and our off-plan property expert will call you back within just 55 seconds.
             </p>
             
             <div className="flex flex-wrap gap-4">
@@ -259,7 +259,7 @@ export default function PropertyInquiry({ property, propertyId }: Props) {
                     onChange={handleFormChange}
                   />
                   <label htmlFor="interestedInMortgage" className="ml-2 block text-sm text-gray-700">
-                    I'm interested in mortgage advice
+                    I&quot;m interested in mortgage advice
                   </label>
                 </div>
 

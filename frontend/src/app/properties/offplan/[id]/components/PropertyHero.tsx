@@ -46,13 +46,21 @@ export default function PropertyHero({ property, developer }: Props) {
           }
           alt={property.title}
           fill
-          className="object-cover"
+          className={`object-cover transition-opacity duration-500 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
           sizes="100vw"
           priority
           onLoad={() => setImageLoaded(true)}
           placeholder="blur"
-          blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyDnyDzUlVPUNxFMnpUgWl/aQHs2OvG9zMY3XtRQDw5FEp2xFo2lqfSkYH"
+          blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyDzUlVPUNxFMnpUgWl/aQHs2OvG9zMY3XtRQDw5FEp2xFo2lqfSkYH"
         />
+        
+        {/* Loading placeholder - shown until image loads */}
+        {!imageLoaded && (
+          <div className="absolute inset-0 bg-gray-200 animate-pulse">
+            <div className="absolute inset-0 bg-gradient-to-b from-gray-300 to-gray-400"></div>
+          </div>
+        )}
+        
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/70 to-black/90" />
       </div>
 
@@ -73,7 +81,7 @@ export default function PropertyHero({ property, developer }: Props) {
       </div>
 
       {/* Content */}
-      <div className="absolute inset-0 flex flex-col justify-end">
+      <div className={`absolute inset-0 flex flex-col justify-end transition-opacity duration-500 ${imageLoaded ? 'opacity-100' : 'opacity-75'}`}>
         <div className="container mx-auto px-4 pb-24 relative z-10 text-white">
           <div className="max-w-5xl">
             {/* Property Tags */}

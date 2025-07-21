@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { getTeamMembers, deleteTeamMember, TeamMember } from '@/services/teamService';
 import Button from '@/components/ui/Button';
-import { FaEdit, FaTrash, FaPlus, FaArrowUp, FaArrowDown } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaPlus } from 'react-icons/fa';
 import StatusBadge from '@/components/ui/StatusBadge';
 // import AdminLayout from '@/components/admin/AdminLayout';
 

@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import PropertyCard from "./PropertyCard";
 import { Property } from "@/services/propertyService";
-import dynamic from 'next/dynamic';
 import Chatbot from "@/components/chatbot/Chatbot";
 import Image from "next/image";
 import Modal from '@/components/ui/Modal';
@@ -198,7 +197,7 @@ const PropertyDetailClient: React.FC<PropertyDetailClientProps> = ({ property, s
               bedrooms={property.bedrooms}
               bathrooms={property.bathrooms}
               area={property.area}
-              imageUrl={property.mainImage || ''}
+              imageUrl={property.main_image || ''}
               featured={property.featured}
               agent={property.agent}
             />

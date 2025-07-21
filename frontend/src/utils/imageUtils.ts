@@ -3,9 +3,7 @@
  */
 
 // Backend server URL
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-// Normalize API URL to ensure it doesn't end with /api
-const BASE_URL = API_URL.endsWith('/api') ? API_URL.slice(0, -4) : API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 // Default placeholder image for missing images
 const DEFAULT_IMAGE = '/images/default-property.jpg';

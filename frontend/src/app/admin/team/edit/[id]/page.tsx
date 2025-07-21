@@ -3,15 +3,14 @@
 import React, { useState, useEffect, FormEvent, ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { getTeamMemberById, updateTeamMember, TeamMember } from '@/services/teamService';
+import { getTeamMemberById, updateTeamMember } from '@/services/teamService';
 import Button from '@/components/ui/Button';
-// import AdminLayout from '@/components/admin/AdminLayout';
 import { FaArrowLeft, FaPlus, FaTimes } from 'react-icons/fa';
 
 interface EditTeamMemberPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default function EditTeamMemberPage({ params }: EditTeamMemberPageProps) {
@@ -296,10 +295,12 @@ export default function EditTeamMemberPage({ params }: EditTeamMemberPageProps) 
                   </label>
                   {imagePreview ? (
                     <div className="relative h-40 w-40 rounded-lg overflow-hidden">
-                      <img
+                      <Image
                         src={imagePreview}
-                        alt="Current"
-                        className="object-cover w-full h-full"
+                        alt="Current team member"
+                        fill
+                        className="object-cover"
+                        sizes="160px"
                       />
                     </div>
                   ) : (

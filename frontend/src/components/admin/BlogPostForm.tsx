@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { createBlogPost, updateBlogPost, getBlogPostById, getBlogImageUrl, BlogPost } from '@/services/blogService';
+import { createBlogPost, updateBlogPost, getBlogPostById, getBlogImageUrl } from '@/services/blogService';
 import Button from '@/components/ui/Button';
 import Alert from '@/components/ui/Alert';
 
@@ -34,40 +34,42 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ postId }) => {
   });
 
   // Fetch post data if editing
-  useEffect(() => {
-    if (postId) {
-      const fetchPost = async () => {
-        try {
-          setLoading(true);
-          const response = await getBlogPostById(postId);
-          const post = response.post;
+  const fetchPost = useCallback(async () => {
+    if (!postId) return;
 
-          setFormData({
-            title: post.title,
-            content: post.content,
-            excerpt: post.excerpt,
-            category: post.category,
-            tags: post.tags.join(', '),
-            status: post.status,
-            featuredImage: null
-          });
+    try {
+      setLoading(true);
+      const response = await getBlogPostById(postId);
+      const post = response.post;
 
-          if (post.featuredImage) {
-            setImagePreview(getBlogImageUrl(post.featuredImage));
-          }
+      setFormData({
+        title: post.title,
+        content: post.content,
+        excerpt: post.excerpt,
+        category: post.category,
+        tags: post.tags.join(', '),
+        status: post.status,
+        featuredImage: null
+      });
 
-          setError(null);
-        } catch (err) {
-          console.error(`Error fetching blog post with ID ${postId}:`, err);
-          setError('Failed to load blog post');
-        } finally {
-          setLoading(false);
-        }
-      };
+      if (post.featuredImage) {
+        setImagePreview(getBlogImageUrl(post.featuredImage));
+      }
 
-      fetchPost();
+      setError(null);
+    } catch (err) {
+      console.error(`Error fetching blog post with ID ${postId}:`, err);
+      setError('Failed to load blog post');
+    } finally {
+      setLoading(false);
     }
   }, [postId]);
+
+  useEffect(() => {
+    if (postId) {
+      fetchPost();
+    }
+  }, [postId, fetchPost]);
 
   // Handle form input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -123,14 +125,13 @@ const BlogPostForm: React.FC<BlogPostFormProps> = ({ postId }) => {
         submitData.append('featuredImage', formData.featuredImage);
       }
 
-      let response;
       if (postId) {
         // Update existing post
-        response = await updateBlogPost(postId, submitData);
+        await updateBlogPost(postId, submitData);
         setSuccess('Blog post updated successfully');
       } else {
         // Create new post
-        response = await createBlogPost(submitData);
+        await createBlogPost(submitData);
         setSuccess('Blog post created successfully');
 
         // Reset form after successful creation

@@ -38,8 +38,6 @@ export default function DocumentRequestsPage() {
     status: '',
   });
 
-
-
   // Update document request status
   const handleStatusUpdate = async (id: string, status: 'pending' | 'sent' | 'completed') => {
     // Get token from localStorage if not available from context
@@ -330,7 +328,18 @@ export default function DocumentRequestsPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <StatusBadge status={request.status} />
+                      <div className="flex items-center space-x-2">
+                        <StatusBadge status={request.status} />
+                        <select
+                          value={request.status}
+                          onChange={(e) => handleStatusUpdate(request.id, e.target.value as 'pending' | 'sent' | 'completed')}
+                          className="text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-gray-500"
+                        >
+                          <option value="pending">Pending</option>
+                          <option value="sent">Sent</option>
+                          <option value="completed">Completed</option>
+                        </select>
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <button

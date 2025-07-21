@@ -1,4 +1,3 @@
-import supabase, { db } from "../../../../lib/supabase";
 import { NextResponse } from 'next/server';
 
 // GET /api/messages - Get all messages/contact submissions (admin only)

@@ -27,7 +27,7 @@ export default function AdminInquiriesPage() {
       } else {
         setError('Failed to fetch inquiries');
       }
-    } catch (error) {
+    } catch {
       setError('An error occurred while fetching inquiries');
     } finally {
       setLoading(false);
@@ -82,7 +82,7 @@ export default function AdminInquiriesPage() {
       } else {
         setError('Failed to update inquiry status');
       }
-    } catch (error) {
+    } catch {
       setError('An error occurred while updating inquiry status');
     }
   };
@@ -198,11 +198,11 @@ export default function AdminInquiriesPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      {typeof inquiry.property === 'object' && inquiry.property.mainImage ? (
+                      {typeof inquiry.property === 'object' && inquiry.property.main_image ? (
                         <div className="flex items-center">
                           <div className="h-10 w-10 flex-shrink-0 mr-3 relative">
                             <Image
-                              src={`http://localhost:5000${inquiry.property.mainImage}`}
+                              src={`http://localhost:5000${inquiry.property.main_image}`}
                               alt={typeof inquiry.property === 'object' && inquiry.property.title ? inquiry.property.title : 'Property Image'}
                               fill
                               sizes="(max-width: 768px) 100vw, 40px"
@@ -307,11 +307,11 @@ export default function AdminInquiriesPage() {
               {/* Property Information */}
               <div>
                 <h4 className="text-sm font-medium text-gray-500 mb-2">Property Information</h4>
-                {typeof selectedInquiry.property === 'object' && selectedInquiry.property.mainImage ? (
+                {typeof selectedInquiry.property === 'object' && selectedInquiry.property.main_image ? (
                   <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 shadow-sm">
                     <div className="mb-4 relative h-40 w-full">
                       <Image
-                        src={`http://localhost:5000${selectedInquiry.property.mainImage}`}
+                        src={`http://localhost:5000${selectedInquiry.property.main_image}`}
                         alt={typeof selectedInquiry.property === 'object' && selectedInquiry.property.title ? selectedInquiry.property.title : 'Property Image'}
                         fill
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

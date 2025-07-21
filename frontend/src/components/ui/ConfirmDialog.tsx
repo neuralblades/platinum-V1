@@ -2,7 +2,6 @@
 
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
-import Alert from '@/components/ui/Alert';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
