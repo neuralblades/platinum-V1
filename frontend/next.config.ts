@@ -40,8 +40,6 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ['@supabase/supabase-js'],
   },
-  
-  swcMinify: true,
 };
 
 export default nextConfig;

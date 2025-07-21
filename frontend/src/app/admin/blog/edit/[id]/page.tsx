@@ -1,6 +1,6 @@
 'use client';
 
-import React, { Usable } from 'react';
+import React, { use } from 'react';
 import BlogPostForm from '@/components/admin/BlogPostForm';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
@@ -32,9 +32,14 @@ const EditBlogPostClient: React.FC<EditBlogPostClientProps> = ({ postId }) => {
 };
 
 // Server component that passes the ID to the client component
-export default function EditBlogPostPage({ params }: { params: Usable<{ id: string }> }) {
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default function EditBlogPostPage({ params }: PageProps) {
   // Properly unwrap params using React.use()
-  const unwrappedParams = React.use(params);
+  const unwrappedParams = use(params);
   const postId = unwrappedParams.id;
+  
   return <EditBlogPostClient postId={postId} />;
 }
