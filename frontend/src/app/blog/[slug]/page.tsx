@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, Usable } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
@@ -124,11 +124,7 @@ const BlogPostDetailClient: React.FC<BlogPostDetailClientProps> = ({ slug }) => 
               The blog post you&apos;re looking for is not available.
             </p>
             <div className="mt-4 inline-block rounded-md bg-gradient-to-r from-gray-600 to-gray-800 px-4 py-2 text-white transition-all hover:from-gray-700 hover:to-gray-900">
-              <Link
-                href="/blog"
-              >
-                Back to Blog
-              </Link>
+              <Link href="/blog">Back to Blog</Link>
             </div>
           </div>
         </div>
@@ -203,9 +199,7 @@ const BlogPostDetailClient: React.FC<BlogPostDetailClientProps> = ({ slug }) => 
                 {/* Tags */}
                 {post.tags && post.tags.length > 0 && (
                   <div className="mt-8 border-t border-gray-100 pt-6">
-                    <h3 className="mb-3 text-lg font-bold">
-                      Tags
-                    </h3>
+                    <h3 className="mb-3 text-lg font-bold">Tags</h3>
                     <div className="flex flex-wrap gap-2">
                       {post.tags.map((tag) => (
                         <div key={tag}>
@@ -223,18 +217,15 @@ const BlogPostDetailClient: React.FC<BlogPostDetailClientProps> = ({ slug }) => 
 
                 {/* Share Button */}
                 <div className="mt-8 border-t border-gray-100 pt-6">
-                  <h3 className="mb-3 text-lg font-bold">
-                    Share This Article
-                  </h3>
+                  <h3 className="mb-3 text-lg font-bold">Share This Article</h3>
                   <button
                     onClick={() => {
                       if (navigator.share) {
                         navigator.share({
                           title: post.title,
                           url: window.location.href,
-                        }).catch(err => console.error('Error sharing:', err));
+                        }).catch((err) => console.error('Error sharing:', err));
                       } else {
-                        // Fallback for browsers that don't support navigator.share
                         const shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(post.title)}`;
                         window.open(shareUrl, '_blank');
                       }
@@ -246,7 +237,7 @@ const BlogPostDetailClient: React.FC<BlogPostDetailClientProps> = ({ slug }) => 
                       fill="currentColor"
                       viewBox="0 0 24 24"
                     >
-                      <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z" />
+                      <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.70l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z" />
                     </svg>
                     Share
                   </button>
@@ -256,16 +247,11 @@ const BlogPostDetailClient: React.FC<BlogPostDetailClientProps> = ({ slug }) => 
 
             {/* Comments Section */}
             <div className="mt-8 rounded-xl bg-white p-8 shadow-md">
-              <h2 className="mb-6 text-2xl font-bold">
-                Comments
-              </h2>
+              <h2 className="mb-6 text-2xl font-bold">Comments</h2>
 
               {/* Comment Form */}
               {isAuthenticated ? (
-                <form
-                  onSubmit={handleCommentSubmit}
-                  className="mb-8"
-                >
+                <form onSubmit={handleCommentSubmit} className="mb-8">
                   <div className="mb-4">
                     <label
                       htmlFor="comment"
@@ -309,9 +295,7 @@ const BlogPostDetailClient: React.FC<BlogPostDetailClientProps> = ({ slug }) => 
                   <p>
                     Please{' '}
                     <span className="font-medium text-gray-600 underline">
-                      <Link href="/login">
-                        log in
-                      </Link>
+                      <Link href="/login">log in</Link>
                     </span>{' '}
                     to leave a comment.
                   </p>
@@ -365,7 +349,11 @@ const BlogPostDetailClient: React.FC<BlogPostDetailClientProps> = ({ slug }) => 
 };
 
 // Server component that passes the slug to the client component
-export default function BlogPostDetailPage({ params }: { params: Usable<{ slug: string }> }) {
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export default function BlogPostDetailPage({ params }: PageProps) {
   // Properly unwrap params using React.use()
   const unwrappedParams = React.use(params);
   const slug = unwrappedParams.slug;
