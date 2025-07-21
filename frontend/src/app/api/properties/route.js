@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import supabase, { db } from '../../../../lib/supabase';
+import { db } from '@/lib/supabase';
 import jwt from 'jsonwebtoken';
 
 // In-memory cache for properties (in production, use Redis or similar)

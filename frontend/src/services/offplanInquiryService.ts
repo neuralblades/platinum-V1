@@ -141,6 +141,7 @@ export const updateOffplanInquiryStatus = async (
         message: 'Failed to update status on server and locally'
       };
     }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (apiError: any) {
     console.error('API error:', apiError);
     console.error('Error details:', {

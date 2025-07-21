@@ -7,6 +7,7 @@ import Image from 'next/image';
 import GoogleMap from '@/components/maps/GoogleMap';
 import RatingCard from '@/components/RatingCard';
 import Breadcrumb from '@/components/ui/Breadcrumb';
+import Alert from '@/components/ui/Alert';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({

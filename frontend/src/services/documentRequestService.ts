@@ -2,6 +2,19 @@
 
 import api from './api';
 
+interface DocumentRequest {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  propertyId: string;
+  requestType: 'brochure' | 'floorplan';
+  status: 'pending' | 'sent' | 'completed';
+  createdAt: string;
+  updatedAt: string;
+}
+
 interface DocumentRequestData {
   firstName: string;
   lastName: string;
@@ -15,7 +28,7 @@ interface DocumentRequestData {
 interface DocumentRequestResponse {
   success: boolean;
   message: string;
-  documentRequest?: any;
+  documentRequest?: DocumentRequest;
   error?: string;
 }
 
@@ -26,11 +39,18 @@ export const createDocumentRequest = async (data: DocumentRequestData): Promise<
   try {
     const response = await api.post('/document-requests', data);
     return response.data;
-  } catch (error: any) {
-    console.error('Error creating document request:', error);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error('Error creating document request:', error.message);
+      return {
+        success: false,
+        message: error.message || 'Failed to create document request',
+      };
+    }
+
     return {
       success: false,
-      message: error.response?.data?.message || error.message || 'Failed to create document request',
+      message: 'An unknown error occurred',
     };
   }
 };
@@ -56,11 +76,18 @@ export const getAllDocumentRequests = async (
     // Make the request with query parameters
     const response = await api.get('/document-requests', { params: filters });
     return response.data;
-  } catch (error: any) {
-    console.error('Error fetching document requests:', error);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error('Error message:', error.message);
+      return {
+        success: false,
+        message: error.message || 'An error occurred',
+      };
+    }
+
     return {
       success: false,
-      message: error.response?.data?.message || error.message || 'Failed to fetch document requests',
+      message: 'An unknown error occurred',
     };
   }
 };
@@ -80,11 +107,18 @@ export const updateDocumentRequestStatus = async (
     // Make the request
     const response = await api.put(`/document-requests/${id}`, { status });
     return response.data;
-  } catch (error: any) {
-    console.error('Error updating document request status:', error);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error('Error message:', error.message);
+      return {
+        success: false,
+        message: error.message || 'An error occurred',
+      };
+    }
+
     return {
       success: false,
-      message: error.response?.data?.message || error.message || 'Failed to update document request status',
+      message: 'An unknown error occurred',
     };
   }
 };
@@ -100,11 +134,18 @@ export const deleteDocumentRequest = async (id: string, token: string) => {
     // Make the request
     const response = await api.delete(`/document-requests/${id}`);
     return response.data;
-  } catch (error: any) {
-    console.error('Error deleting document request:', error);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error('Error message:', error.message);
+      return {
+        success: false,
+        message: error.message || 'An error occurred',
+      };
+    }
+
     return {
       success: false,
-      message: error.response?.data?.message || error.message || 'Failed to delete document request',
+      message: 'An unknown error occurred',
     };
   }
 };

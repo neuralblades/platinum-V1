@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
 import { getProperties, deleteProperty } from '@/services/propertyService';
 import { getFullImageUrl } from '@/utils/imageUtils';
@@ -10,7 +9,7 @@ import StatusBadge from '@/components/ui/StatusBadge';
 
 // Define Property interface to avoid using 'any'
 interface Property {
-  id: string;
+  id: string | number;
   title: string;
   price: number;
   location: string;
@@ -20,6 +19,24 @@ interface Property {
   featured: boolean;
   is_offplan?: boolean;
   created_at: string;
+}
+
+// Define API response interface
+interface PropertiesResponse {
+  success: boolean;
+  properties: Property[];
+  pages: number;
+  page: number;
+  total?: number;
+  message?: string;
+}
+
+// Define filters interface
+interface PropertyFilters {
+  page?: number;
+  keyword?: string;
+  type?: string;
+  status?: string;
 }
 
 export default function AdminPropertiesPage() {
@@ -37,20 +54,23 @@ export default function AdminPropertiesPage() {
 
   const fetchProperties = async (page = 1, keyword = searchTerm, type = filterType, status = filterStatus) => {
     setLoading(true);
+    setError(null);
     try {
-      const response = await getProperties({
+      const filters: PropertyFilters = {
         page,
-        keyword,
-        type,
-        status,
-      });
+        ...(keyword && { keyword }),
+        ...(type && { type }),
+        ...(status && { status })
+      };
 
-      if (response.success) {
+      const response = await getProperties(filters) as PropertiesResponse;
+
+      if (response.success && response.properties) {
         setProperties(response.properties);
-        setTotalPages(response.pages);
-        setCurrentPage(response.page);
+        setTotalPages(response.pages || 1);
+        setCurrentPage(response.page || 1);
       } else {
-        setError('Failed to fetch properties');
+        setError(response.message || 'Failed to fetch properties');
       }
     } catch (error) {
       console.error('Error fetching properties:', error);
@@ -87,12 +107,13 @@ export default function AdminPropertiesPage() {
     setError(null); // Clear any previous errors
 
     try {
-      const response = await deleteProperty(propertyToDelete.id);
+      const response = await deleteProperty(String(propertyToDelete.id));
 
       if (response.success) {
         // Remove the property from the list
         setProperties(properties.filter(p => p.id !== propertyToDelete.id));
         setShowDeleteModal(false);
+        setPropertyToDelete(null);
       } else {
         // Show the specific error message from the server if available
         const errorMessage = response.message || 'Failed to delete property';
@@ -108,9 +129,10 @@ export default function AdminPropertiesPage() {
 
         setShowDeleteModal(false); // Close the modal to show the error message
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error deleting property:', error);
-      setError(error?.message || 'An error occurred while deleting the property');
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred while deleting the property';
+      setError(errorMessage);
       setShowDeleteModal(false); // Close the modal to show the error message
     } finally {
       setIsDeleting(false);
@@ -270,7 +292,6 @@ export default function AdminPropertiesPage() {
                               fill
                               sizes="(max-width: 768px) 100vw, 40px"
                               className="object-cover rounded-md"
-
                             />
                           ) : (
                             <div className="h-10 w-10 bg-gray-200 rounded-md flex items-center justify-center">
@@ -287,7 +308,7 @@ export default function AdminPropertiesPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">AED {property.price.toLocaleString()}</div>
+                      <div className="text-sm text-gray-900">AED {property.price?.toLocaleString() || 'Price on request'}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">{property.property_type}</div>
@@ -409,7 +430,7 @@ export default function AdminPropertiesPage() {
       )}
 
       {/* Delete Confirmation Modal */}
-      {showDeleteModal && (
+      {showDeleteModal && propertyToDelete && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-xl border border-gray-100">
             <div className="flex items-center mb-4">
@@ -421,11 +442,14 @@ export default function AdminPropertiesPage() {
               <h3 className="text-lg font-bold text-gray-900">Confirm Deletion</h3>
             </div>
             <p className="mb-6 text-gray-700">
-              Are you sure you want to delete the property &quot;{propertyToDelete?.title}&quot;? This action cannot be undone.
+              Are you sure you want to delete the property &quot;{propertyToDelete.title}&quot;? This action cannot be undone.
             </p>
             <div className="flex justify-end space-x-4">
               <Button
-                onClick={() => setShowDeleteModal(false)}
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setPropertyToDelete(null);
+                }}
                 variant="outline"
                 disabled={isDeleting}
               >

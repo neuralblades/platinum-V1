@@ -26,6 +26,7 @@ export async function fetchWithErrorHandling(url: string, errorMessage: string) 
  * @param params The parameters to convert
  * @returns A URLSearchParams object
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function objectToQueryParams(params: Record<string, any>): URLSearchParams {
   const queryParams = new URLSearchParams();
 

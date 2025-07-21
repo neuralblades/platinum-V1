@@ -1,4 +1,3 @@
-import supabase, { db } from "../../../../lib/supabase";
 import { NextResponse } from 'next/server';
 
 // Rate limiting store

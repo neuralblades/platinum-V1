@@ -10,10 +10,34 @@ import ErrorDisplay from '@/components/ui/ErrorDisplay';
 import { getFullImageUrl } from '@/utils/imageUtils';
 import Breadcrumb from '@/components/ui/Breadcrumb';
 
+interface Developer {
+  id?: number;
+  name: string;
+  logo?: string;
+  description?: string;
+  established?: string;
+  headquarters?: string;
+  website?: string;
+}
+
+interface Property {
+  id: number;
+  title: string;
+  price: number;
+  location: string;
+  bedrooms?: number;
+  bathrooms?: number;
+  area?: number;
+  mainImage?: string;
+  featured?: boolean;
+  isOffplan?: boolean;
+  agent?: string;
+}
+
 export default function DeveloperDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = use(params);
-  const [developer, setDeveloper] = useState<any>(null);
-  const [properties, setProperties] = useState<any[]>([]);
+  const [developer, setDeveloper] = useState<Developer | null>(null);
+  const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -190,20 +214,27 @@ export default function DeveloperDetailPage({ params }: { params: Promise<{ slug
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {properties.map((property: any) => (
+              {properties.map((property: Property) => (
                 <div key={property.id}>
                   <PropertyCard
-                    id={property.id}
+                    id={property.id.toString()}
                     title={property.title}
                     price={property.price}
                     location={property.location}
-                    bedrooms={property.bedrooms}
-                    bathrooms={property.bathrooms}
-                    area={property.area}
-                    imageUrl={property.mainImage}
-                    featured={property.featured}
-                    isOffplan={property.isOffplan}
-                    agent={property.agent}
+                    bedrooms={property.bedrooms || 0}
+                    bathrooms={property.bathrooms || 0}
+                    area={property.area || 0}
+                    imageUrl={property.mainImage || ''}
+                    featured={property.featured || false}
+                    isOffplan={property.isOffplan || false}
+                    agent={property.agent ? {
+                      id: property.agent,
+                      firstName: '',
+                      lastName: '',
+                      email: '',
+                      phone: '',
+                      avatar: ''
+                    } : undefined}
                   />
                 </div>
               ))}

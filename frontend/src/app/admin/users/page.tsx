@@ -5,25 +5,55 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { getAllUsers, updateUserRole, deleteUser } from '@/services/userService';
 
+// Define User interface
+interface User {
+  id: string | number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  role: 'user' | 'agent' | 'admin';
+  avatar?: string;
+  isActive?: boolean;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+// Define API response interface
+interface UsersResponse {
+  success: boolean;
+  users: User[];
+  message?: string;
+  total?: number;
+}
+
+// Define API response for operations
+interface UserOperationResponse {
+  success: boolean;
+  message?: string;
+  user?: User;
+}
+
 export default function AdminUsersPage() {
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [userToDelete, setUserToDelete] = useState<any>(null);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
 
   const fetchUsers = async () => {
     setLoading(true);
+    setError(null);
     try {
-      const response = await getAllUsers();
-      if (response.success) {
+      const response = await getAllUsers() as UsersResponse;
+      if (response.success && response.users) {
         setUsers(response.users);
         setFilteredUsers(response.users);
       } else {
-        setError('Failed to fetch users');
+        setError(response.message || 'Failed to fetch users');
       }
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -43,16 +73,16 @@ export default function AdminUsersPage() {
     } else {
       const filtered = users.filter(
         (user) =>
-          user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          user.role.toLowerCase().includes(searchTerm.toLowerCase())
+          user.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.role?.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredUsers(filtered);
     }
   }, [searchTerm, users]);
 
-  const handleDeleteClick = (user: any) => {
+  const handleDeleteClick = (user: User) => {
     setUserToDelete(user);
     setShowDeleteModal(true);
   };
@@ -61,46 +91,66 @@ export default function AdminUsersPage() {
     if (!userToDelete) return;
 
     setIsDeleting(true);
+    setError(null);
     try {
-      const response = await deleteUser(userToDelete.id);
+      const response = await deleteUser(String(userToDelete.id)) as UserOperationResponse;
       if (response.success) {
         // Remove the user from the list
-        setUsers(users.filter(u => u.id !== userToDelete.id));
-        setFilteredUsers(filteredUsers.filter(u => u.id !== userToDelete.id));
+        const updatedUsers = users.filter(u => u.id !== userToDelete.id);
+        setUsers(updatedUsers);
+        setFilteredUsers(updatedUsers.filter(user =>
+          user.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.role?.toLowerCase().includes(searchTerm.toLowerCase())
+        ));
         setShowDeleteModal(false);
+        setUserToDelete(null);
       } else {
-        setError('Failed to delete user');
+        setError(response.message || 'Failed to delete user');
       }
     } catch (error) {
       console.error('Error deleting user:', error);
-      setError('An error occurred while deleting the user');
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred while deleting the user';
+      setError(errorMessage);
     } finally {
       setIsDeleting(false);
     }
   };
 
-  const handleRoleChange = async (userId: string, newRole: string) => {
+  const handleRoleChange = async (userId: string | number, newRole: 'user' | 'agent' | 'admin') => {
     try {
-      const response = await updateUserRole(userId, newRole);
+      setError(null);
+      const response = await updateUserRole(String(userId), newRole) as UserOperationResponse;
       if (response.success) {
         // Update user in the list
         const updatedUsers = users.map(user =>
           user.id === userId ? { ...user, role: newRole } : user
         );
         setUsers(updatedUsers);
-        setFilteredUsers(updatedUsers.filter(user =>
-          user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          user.role.toLowerCase().includes(searchTerm.toLowerCase())
-        ));
+        
+        // Update filtered users
+        const updatedFilteredUsers = updatedUsers.filter(user =>
+          user.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.role?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        setFilteredUsers(updatedFilteredUsers);
       } else {
-        setError('Failed to update user role');
+        setError(response.message || 'Failed to update user role');
       }
     } catch (error) {
       console.error('Error updating user role:', error);
-      setError('An error occurred while updating user role');
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred while updating user role';
+      setError(errorMessage);
     }
+  };
+
+  const closeDeleteModal = () => {
+    setShowDeleteModal(false);
+    setUserToDelete(null);
+    setError(null);
   };
 
   return (
@@ -210,7 +260,9 @@ export default function AdminUsersPage() {
                           )}
                         </div>
                         <div>
-                          <div className="text-sm font-medium text-gray-900">{user.firstName} {user.lastName}</div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {user.firstName} {user.lastName}
+                          </div>
                         </div>
                       </div>
                     </td>
@@ -223,7 +275,7 @@ export default function AdminUsersPage() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <select
                         value={user.role}
-                        onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                        onChange={(e) => handleRoleChange(user.id, e.target.value as 'user' | 'agent' | 'admin')}
                         className="text-sm border border-gray-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-all shadow-sm"
                       >
                         <option value="user">User</option>
@@ -265,7 +317,7 @@ export default function AdminUsersPage() {
       </div>
 
       {/* Delete Confirmation Modal */}
-      {showDeleteModal && (
+      {showDeleteModal && userToDelete && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-xl border border-gray-100">
             <div className="flex items-center mb-4">
@@ -277,11 +329,11 @@ export default function AdminUsersPage() {
               <h3 className="text-lg font-bold text-gray-900">Confirm Deletion</h3>
             </div>
             <p className="mb-6 text-gray-700">
-              Are you sure you want to delete the user "{userToDelete?.firstName} {userToDelete?.lastName}"? This action cannot be undone.
+              Are you sure you want to delete the user &quot;{userToDelete.firstName} {userToDelete.lastName}&quot;? This action cannot be undone.
             </p>
             <div className="flex justify-end space-x-4">
               <button
-                onClick={() => setShowDeleteModal(false)}
+                onClick={closeDeleteModal}
                 className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 font-medium"
                 disabled={isDeleting}
               >

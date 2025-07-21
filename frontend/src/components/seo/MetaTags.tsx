@@ -3,6 +3,30 @@
 import { useEffect } from 'react';
 import Head from 'next/head';
 
+interface StructuredDataOrganization {
+  '@context': 'https://schema.org';
+  '@type': 'Organization';
+  name: string;
+  url?: string;
+  logo?: string;
+  sameAs?: string[];
+}
+
+interface StructuredDataArticle {
+  '@context': 'https://schema.org';
+  '@type': 'Article';
+  headline: string;
+  description?: string;
+  image?: string;
+  datePublished?: string;
+  author?: {
+    '@type': 'Person';
+    name: string;
+  };
+}
+
+type StructuredData = StructuredDataOrganization | StructuredDataArticle | Record<string, unknown>; // Fallback to unknown for flexibility
+
 interface MetaTagsProps {
   title: string;
   description: string;
@@ -12,7 +36,7 @@ interface MetaTagsProps {
   ogLocale?: string;
   twitterCard?: 'summary' | 'summary_large_image';
   noIndex?: boolean;
-  structuredData?: Record<string, any>;
+  structuredData?: StructuredData;
 }
 
 export default function MetaTags({

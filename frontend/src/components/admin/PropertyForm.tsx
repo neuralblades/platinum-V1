@@ -15,6 +15,11 @@ interface PropertyFormProps {
   isEdit?: boolean;
 }
 
+interface Developer {
+  id: string;
+  name: string;
+}
+
 const PropertyForm = ({ propertyId, isEdit = false }: PropertyFormProps) => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -23,7 +28,7 @@ const PropertyForm = ({ propertyId, isEdit = false }: PropertyFormProps) => {
   const [uploadedImages, setUploadedImages] = useState<File[]>([]);
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
-  const [developers, setDevelopers] = useState<any[]>([]);
+  const [developers, setDevelopers] = useState<Developer[]>([]);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -138,7 +143,7 @@ const PropertyForm = ({ propertyId, isEdit = false }: PropertyFormProps) => {
 
       fetchPropertyData();
     }
-  }, [isEdit, propertyId]);
+  }, [isEdit, propertyId, router]);
 
   // Handle form input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -216,8 +221,7 @@ const PropertyForm = ({ propertyId, isEdit = false }: PropertyFormProps) => {
 
       // If bathrooms is a whole number, convert it to an integer
       if (Number.isInteger(Number(formDataCopy.bathrooms))) {
-        // Use type assertion to handle the type mismatch
-        (formDataCopy as any).bathrooms = parseInt(formDataCopy.bathrooms.toString());
+        formDataCopy.bathrooms = parseInt(formDataCopy.bathrooms.toString(), 10).toString();
       }
 
       // Add text fields

@@ -49,7 +49,7 @@ const SearchInput: React.FC<SearchInputProps> = ({
             id: property.id,
             title: property.title,
             location: property.location,
-            isOffplan: property.isOffplan,
+            isOffplan: property.is_offplan,
           }));
           setSuggestions(propertyResults.slice(0, 5)); // Limit to 5 suggestions
         } else {

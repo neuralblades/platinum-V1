@@ -17,6 +17,11 @@ interface OffplanPropertyFormProps {
   isEdit?: boolean;
 }
 
+interface Developer {
+  id: string;
+  name: string;
+}
+
 export default function OffplanPropertyForm({ propertyId, isEdit = false }: OffplanPropertyFormProps) {
   const router = useRouter();
   const { showToast } = useToast();
@@ -26,7 +31,7 @@ export default function OffplanPropertyForm({ propertyId, isEdit = false }: Offp
   const [uploadedImages, setUploadedImages] = useState<File[]>([]);
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
-  const [developers, setDevelopers] = useState<any[]>([]);
+  const [developers, setDevelopers] = useState<Developer[]>([]);
 
   // Header image state
   const [headerImage, setHeaderImage] = useState<File | null>(null);
@@ -585,7 +590,7 @@ export default function OffplanPropertyForm({ propertyId, isEdit = false }: Offp
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label htmlFor="bedroomRange" className="block text-sm font-medium text-gray-700 mb-1">
-                Bedroom Range (e.g., "1-3" or "Studio-2") *
+                Bedroom Range (e.g., &quot;1-3&quot; or &quot;Studio-2&quot;) *
               </label>
               <input
                 type="text"
@@ -598,7 +603,7 @@ export default function OffplanPropertyForm({ propertyId, isEdit = false }: Offp
                 placeholder="e.g., 1-3, Studio-2, 2-4"
               />
               <p className="text-xs text-gray-500 mt-1">
-                Specify the range of bedrooms available in this development (e.g., "1-3", "Studio-2")
+                Specify the range of bedrooms available in this development (e.g., &quot;1-3&quot;, &quot;Studio-2&quot;)
               </p>
             </div>
             <div>

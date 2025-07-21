@@ -1,10 +1,20 @@
-"use client";
+'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { getProperties, getPropertyById, PropertyFilter } from '@/services/propertyService';
 import Button from '@/components/ui/Button';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
+
+// Define the API response type for getProperties
+interface GetPropertiesResponse {
+  success: boolean;
+  properties?: { id: string; title: string; location: string; isOffplan?: boolean }[];
+  page?: number;
+  pages?: number;
+  total?: number;
+  message?: string; // Added for error messages
+}
 
 interface IntegratedSearchFiltersProps {
   filters: PropertyFilter;
@@ -13,7 +23,7 @@ interface IntegratedSearchFiltersProps {
   className?: string;
   isLoading?: boolean;
   isError?: boolean;
-  results?: any;
+  results?: Suggestion[];
 }
 
 interface Suggestion {
@@ -89,9 +99,6 @@ const IntegratedSearchFilters: React.FC<IntegratedSearchFiltersProps> = ({
   onFilterChange,
   onApplyFilters,
   className = '',
-  isLoading = false,
-  isError = false,
-  results = [],
 }) => {
   const [query, setQuery] = useState(filters.keyword || '');
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
@@ -121,7 +128,7 @@ const IntegratedSearchFilters: React.FC<IntegratedSearchFiltersProps> = ({
       setError(null);
 
       try {
-        const response = await getProperties({ keyword: query, page: 1 });
+        const response = await getProperties({ keyword: query, page: 1 }) as GetPropertiesResponse;
 
         if (response.success && response.properties) {
           if (response.properties.length === 0) {
@@ -406,7 +413,7 @@ const IntegratedSearchFilters: React.FC<IntegratedSearchFiltersProps> = ({
                   </ul>
                 ) : query.length >= 2 ? (
                   <div className="p-3 text-center">
-                    <div className="text-gray-500">No properties found matching &ldquo;{query}&rdquo;</div>
+                    <div className="text-gray-500">No properties found matching “{query}”</div>
                     <div className="mt-2 text-sm text-gray-600">
                       Try different keywords or browse all properties
                     </div>

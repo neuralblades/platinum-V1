@@ -12,7 +12,7 @@ import StatusBadge from '@/components/ui/StatusBadge';
 
 // Types
 interface Property {
-  id: number;
+  id: string | number; // Allow both string and number
   title: string;
   location: string;
   price: number;
@@ -21,11 +21,28 @@ interface Property {
 }
 
 interface Inquiry {
-  id: number;
+  id: string | number; // Allow both string and number
   name: string;
   email: string;
   status?: string;
   createdAt: string;
+}
+
+interface OffplanInquiry {
+  id: string | number; // Allow both string and number
+  name: string;
+  email: string;
+  status?: string;
+  createdAt: string;
+  projectName?: string;
+  budget?: number;
+  interestedIn?: string;
+}
+
+interface User {
+  id: string | number; // Allow both string and number
+  name: string;
+  email: string;
 }
 
 interface StatCardProps {
@@ -58,7 +75,7 @@ export default function AdminDashboard() {
   });
   const [recentProperties, setRecentProperties] = useState<Property[]>([]);
   const [recentInquiries, setRecentInquiries] = useState<Inquiry[]>([]);
-  const [recentOffplanInquiries, setRecentOffplanInquiries] = useState<Inquiry[]>([]);
+  const [recentOffplanInquiries, setRecentOffplanInquiries] = useState<OffplanInquiry[]>([]);
   const [loading, setLoading] = useState(true);
   const [clearingCache, setClearingCache] = useState(false);
   const [cacheMessage, setCacheMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
@@ -98,15 +115,16 @@ export default function AdminDashboard() {
       try {
         // Fetch properties
         const propertiesResponse = await getProperties();
-        if (propertiesResponse.success) {
+        if (propertiesResponse.success && propertiesResponse.properties) {
+          const properties = propertiesResponse.properties as Property[];
           setStats(prev => ({
             ...prev,
-            properties: propertiesResponse.total || propertiesResponse.properties.length,
-            featuredProperties: propertiesResponse.properties.filter((p: Property) => p.featured).length,
+            properties: propertiesResponse.total || properties.length,
+            featuredProperties: properties.filter((p: Property) => p.featured).length,
           }));
 
           // Get 5 most recent properties
-          const sortedProperties = [...propertiesResponse.properties].sort(
+          const sortedProperties = [...properties].sort(
             (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
           );
           setRecentProperties(sortedProperties.slice(0, 5));
@@ -114,14 +132,15 @@ export default function AdminDashboard() {
 
         // Fetch inquiries
         const inquiriesResponse = await getAllInquiries();
-        if (inquiriesResponse.success) {
+        if (inquiriesResponse.success && inquiriesResponse.inquiries) {
+          const inquiries = inquiriesResponse.inquiries as Inquiry[];
           setStats(prev => ({
             ...prev,
-            inquiries: inquiriesResponse.inquiries.length,
+            inquiries: inquiries.length,
           }));
 
           // Get 5 most recent inquiries
-          const sortedInquiries = [...inquiriesResponse.inquiries].sort(
+          const sortedInquiries = [...inquiries].sort(
             (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
           );
           setRecentInquiries(sortedInquiries.slice(0, 5));
@@ -129,23 +148,25 @@ export default function AdminDashboard() {
 
         // Fetch users
         const usersResponse = await getAllUsers();
-        if (usersResponse.success) {
+        if (usersResponse.success && usersResponse.users) {
+          const users = usersResponse.users as User[];
           setStats(prev => ({
             ...prev,
-            users: usersResponse.users.length,
+            users: users.length,
           }));
         }
 
         // Fetch offplan inquiries
         const offplanInquiriesResponse = await getAllOffplanInquiries();
-        if (offplanInquiriesResponse.success) {
+        if (offplanInquiriesResponse.success && offplanInquiriesResponse.inquiries) {
+          const offplanInquiries = offplanInquiriesResponse.inquiries as OffplanInquiry[];
           setStats(prev => ({
             ...prev,
-            offplanInquiries: offplanInquiriesResponse.inquiries.length,
+            offplanInquiries: offplanInquiries.length,
           }));
 
           // Get 5 most recent offplan inquiries
-          const sortedOffplanInquiries = [...offplanInquiriesResponse.inquiries].sort(
+          const sortedOffplanInquiries = [...offplanInquiries].sort(
             (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
           );
           setRecentOffplanInquiries(sortedOffplanInquiries.slice(0, 5));
@@ -292,7 +313,7 @@ export default function AdminDashboard() {
                       <p className="text-sm text-gray-500">{property.location}</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-gray-700">AED {property.price.toLocaleString()}</p>
+                      <p className="font-bold text-gray-700">AED {property.price?.toLocaleString() || 'Price on request'}</p>
                       <p className="text-xs text-gray-500">
                         {new Date(property.createdAt).toLocaleDateString()}
                       </p>

@@ -83,7 +83,7 @@ export default function LoginPage() {
               />
             </div>
             <p className="mt-2 text-gray-600">Login to your account</p>
-            <p className="text-sm text-gray-500">Don't have an account yet? <Link href="/auth/register" className="text-gray-700 font-medium hover:underline">Sign Up</Link></p>
+            <p className="text-sm text-gray-500">Dont have an account yet? <Link href="/auth/register" className="text-gray-700 font-medium hover:underline">Sign Up</Link></p>
           </div>
 
           {(formError || formError) && (

@@ -39,7 +39,6 @@ const PropertyCard = ({
   bedrooms,
   bedroomRange,
   bathrooms,
-  area,
   imageUrl,
   featured = false,
   isOffplan = false,

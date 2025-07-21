@@ -77,7 +77,6 @@ export const loginUser = async (credentials: LoginCredentials) => {
     return response.data;
   } catch (error) {
     console.error('Error logging in:', error);
-    console.error('Error response:', error.response?.data);
     throw error;
   }
 };
