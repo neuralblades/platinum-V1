@@ -40,7 +40,21 @@ export default function GeneralInquiriesPage() {
     const fetchInquiries = async () => {
       try {
         const data = getGeneralInquiries();
-        setInquiries(data);
+        // Transform the data to match GeneralInquiry interface
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const transformedData: GeneralInquiry[] = data.map((inquiry: any) => ({
+          id: String(inquiry.id || ''), // Ensure id is always a string
+          name: inquiry.name || '',
+          phone: inquiry.phone || '',
+          email: inquiry.email,
+          propertyType: inquiry.property || inquiry.propertyType,
+          bedroomCount: inquiry.bedroomCount || '',
+          propertyInterest: inquiry.propertyInterest || '',
+          message: inquiry.message,
+          createdAt: inquiry.createdAt || new Date().toISOString(),
+          status: inquiry.status || 'new'
+        }));
+        setInquiries(transformedData);
       } catch (error) {
         console.error('Error fetching general inquiries:', error);
       } finally {
@@ -65,13 +79,41 @@ export default function GeneralInquiriesPage() {
       if (typeof window !== 'undefined') {
         const storedInquiries = JSON.parse(localStorage.getItem('generalInquiries') || '[]');
         console.log('Directly retrieved from localStorage:', storedInquiries);
-        setInquiries(storedInquiries);
+        // Transform the data to match GeneralInquiry interface
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const transformedData: GeneralInquiry[] = storedInquiries.map((inquiry: any) => ({
+          id: String(inquiry.id || ''),
+          name: inquiry.name || '',
+          phone: inquiry.phone || '',
+          email: inquiry.email,
+          propertyType: inquiry.propertyType,
+          bedroomCount: inquiry.bedroomCount,
+          propertyInterest: inquiry.propertyInterest,
+          message: inquiry.message,
+          createdAt: inquiry.createdAt || new Date().toISOString(),
+          status: inquiry.status || 'new'
+        }));
+        setInquiries(transformedData);
       }
     } catch (error) {
       console.error('Error accessing localStorage:', error);
       // Fallback to the service function
       const data = getGeneralInquiries();
-      setInquiries(data);
+      // Transform the data to match GeneralInquiry interface
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const transformedData: GeneralInquiry[] = data.map((inquiry: any) => ({
+        id: String(inquiry.id || ''),
+        name: inquiry.name || '',
+        phone: inquiry.phone || '',
+        email: inquiry.email,
+        propertyType: inquiry.property || inquiry.propertyType,
+        bedroomCount: inquiry.bedroomCount || '',
+        propertyInterest: inquiry.propertyInterest || '',
+        message: inquiry.message,
+        createdAt: inquiry.createdAt || new Date().toISOString(),
+        status: inquiry.status || 'new'
+      }));
+      setInquiries(transformedData);
     }
 
     setLoading(false);
@@ -129,7 +171,20 @@ export default function GeneralInquiriesPage() {
                   localStorage.setItem('generalInquiries', JSON.stringify(existingInquiries));
 
                   // Refresh the display
-                  setInquiries(existingInquiries);
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  const transformedData: GeneralInquiry[] = existingInquiries.map((inquiry: any) => ({
+                    id: String(inquiry.id || ''),
+                    name: inquiry.name || '',
+                    phone: inquiry.phone || '',
+                    email: inquiry.email,
+                    propertyType: inquiry.propertyType,
+                    bedroomCount: inquiry.bedroomCount,
+                    propertyInterest: inquiry.propertyInterest,
+                    message: inquiry.message,
+                    createdAt: inquiry.createdAt || new Date().toISOString(),
+                    status: inquiry.status || 'new'
+                  }));
+                  setInquiries(transformedData);
 
                   alert('Test inquiry added. Check the table below.');
                 }
