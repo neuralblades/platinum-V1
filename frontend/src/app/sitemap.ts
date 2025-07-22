@@ -1,7 +1,72 @@
 import { MetadataRoute } from 'next';
-import { getProperties } from '@/services/propertyService';
-import { getBlogPosts } from '@/services/blogService';
-import { getDevelopers } from '@/services/developerService';
+import { db } from '@/lib/supabase';
+import supabase from '@/lib/supabase';
+
+// Server-side functions that mirror your API logic
+async function getPropertiesForSitemap() {
+  try {
+    const params = { limit: 1000, page: 1 };
+    const properties = await db.properties.getAll(params);
+    
+    return {
+      properties: properties.map(property => ({
+        id: property.id,
+        is_offplan: property.is_offplan,
+        updatedAt: property.updated_at,
+        createdAt: property.created_at
+      }))
+    };
+  } catch (error) {
+    console.error('Error fetching properties for sitemap:', error);
+    return { properties: [] };
+  }
+}
+
+async function getBlogPostsForSitemap() {
+  try {
+    const { data: blogPosts, error } = await supabase
+      .from('blog_posts')
+      .select('slug, updated_at, created_at')
+      .eq('status', 'published')
+      .limit(1000);
+
+    if (error) throw error;
+
+    return {
+      posts: blogPosts.map(post => ({
+        slug: post.slug,
+        updatedAt: post.updated_at,
+        createdAt: post.created_at
+      }))
+    };
+  } catch (error) {
+    console.error('Error fetching blog posts for sitemap:', error);
+    return { posts: [] };
+  }
+}
+
+async function getDevelopersForSitemap() {
+  try {
+    const { data: developers, error } = await supabase
+      .from('developers')
+      .select('slug, updated_at, created_at')
+      .eq('is_active', true)
+      .limit(1000);
+
+    if (error) throw error;
+
+    return {
+      developers: developers.map(dev => ({
+        slug: dev.slug,
+        updatedAt: dev.updated_at,
+        createdAt: dev.created_at
+      }))
+    };
+  } catch (error) {
+    console.error('Error fetching developers for sitemap:', error);
+    return { developers: [] };
+  }
+}
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Base URL - replace with your actual domain in production
@@ -60,18 +125,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   try {
-    // Fetch dynamic content
+    // Fetch dynamic content using server-side functions
     const [propertiesResponse, blogResponse, developersResponse] = await Promise.allSettled([
-      getProperties({ limit: 1000 }),
-      getBlogPosts({ limit: 1000 }),
-      getDevelopers(),
+      getPropertiesForSitemap(),
+      getBlogPostsForSitemap(),
+      getDevelopersForSitemap(),
     ]);
 
     // Add properties to sitemap
     if (propertiesResponse.status === 'fulfilled' && propertiesResponse.value?.properties) {
       const properties = propertiesResponse.value.properties;
       
-      // Regular properties - use consistent property name
+      // Regular properties
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const regularProperties = properties.filter((property: any) => !property.is_offplan);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -84,7 +149,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         });
       });
       
-      // Offplan properties - use consistent property name
+      // Offplan properties
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const offplanProperties = properties.filter((property: any) => property.is_offplan);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

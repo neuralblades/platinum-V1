@@ -1,3 +1,4 @@
+import supabase from '@/lib/supabase';
 import { NextResponse } from 'next/server';
 
 // In-memory cache for blog posts
