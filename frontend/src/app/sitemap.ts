@@ -71,9 +71,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     if (propertiesResponse.status === 'fulfilled' && propertiesResponse.value?.properties) {
       const properties = propertiesResponse.value.properties;
       
-      // Regular properties
-      const regularProperties = properties.filter(p => !p.isOffplan);
-      regularProperties.forEach(property => {
+      // Regular properties - use consistent property name
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const regularProperties = properties.filter((property: any) => !property.is_offplan);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      regularProperties.forEach((property: any) => {
         routes.push({
           url: `${baseUrl}/properties/${property.id}`,
           lastModified: new Date(property.updatedAt || property.createdAt),
@@ -82,9 +84,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         });
       });
       
-      // Offplan properties
-      const offplanProperties = properties.filter(p => p.isOffplan);
-      offplanProperties.forEach(property => {
+      // Offplan properties - use consistent property name
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const offplanProperties = properties.filter((property: any) => property.is_offplan);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      offplanProperties.forEach((property: any) => {
         routes.push({
           url: `${baseUrl}/properties/offplan/${property.id}`,
           lastModified: new Date(property.updatedAt || property.createdAt),
@@ -97,7 +101,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Add blog posts to sitemap
     if (blogResponse.status === 'fulfilled' && blogResponse.value?.posts) {
       const posts = blogResponse.value.posts;
-      posts.forEach(post => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      posts.forEach((post: any) => {
         routes.push({
           url: `${baseUrl}/blog/${post.slug}`,
           lastModified: new Date(post.updatedAt || post.createdAt),
@@ -110,7 +115,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Add developers to sitemap
     if (developersResponse.status === 'fulfilled' && developersResponse.value?.developers) {
       const developers = developersResponse.value.developers;
-      developers.forEach(developer => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      developers.forEach((developer: any) => {
         routes.push({
           url: `${baseUrl}/developers/${developer.slug}`,
           lastModified: new Date(developer.updatedAt || developer.createdAt),
