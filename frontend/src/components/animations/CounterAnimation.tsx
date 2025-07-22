@@ -12,7 +12,7 @@ interface CounterProps {
 }
 
 // Custom hook for in-view detection using IntersectionObserver
-function useInViewCustom(ref: React.RefObject<HTMLElement>, options: { once?: boolean; amount?: number } = {}) {
+function useInViewCustom(ref: React.RefObject<HTMLElement | null>, options: { once?: boolean; amount?: number } = {}) {
   const [inView, setInView] = useState(false);
   useEffect(() => {
     if (!ref.current) return;
@@ -42,7 +42,7 @@ export default function CounterAnimation({
   className = '',
 }: CounterProps) {
   const [count, setCount] = useState(0);
-  const ref = useRef(null);
+  const ref = useRef<HTMLSpanElement>(null);
   const isInView = useInViewCustom(ref, { once: true, amount: 0.5 });
   const [hasAnimated, setHasAnimated] = useState(false);
 
