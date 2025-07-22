@@ -14,41 +14,17 @@ import { getResponsiveSizes } from '@/utils/imageOptimizationUtils';
 import { generatePropertySchema, generateBreadcrumbSchema } from '@/utils/structuredDataUtils';
 import MapComponent from '@/components/Map';
 import Chatbot from '@/components/chatbot/Chatbot';
-import { useQuery } from '@tanstack/react-query';
-
-
 
 // Create a client component wrapper
 function PropertyDetailClient({ propertyId }: { propertyId: string }) {
-  // Fetch property details
-  const {
-    data: propertyData,
-    isLoading: propertyLoading,
-    isError: propertyError,
-  } = useQuery({
-    queryKey: ['property', propertyId],
-    queryFn: () => getPropertyById(propertyId),
-  });
-
-  // Fetch similar properties (only if property is loaded)
-  const {
-    data: similarData,
-  } = useQuery({
-    queryKey: [
-      'similarProperties',
-      propertyData?.data?.property_type,
-      propertyData?.data?.bedrooms,
-    ],
-    queryFn: () =>
-      propertyData?.data
-        ? getProperties({
-            type: propertyData.data.property_type,
-            bedrooms: propertyData.data.bedrooms,
-            isOffplan: false,
-          })
-        : Promise.resolve({ properties: [] }),
-    enabled: !!propertyData?.data,
-  });
+  // Property data state
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [propertyData, setPropertyData] = useState<any>(null);
+  const [propertyLoading, setPropertyLoading] = useState(true);
+  const [propertyError, setPropertyError] = useState(false);
+  
+  // Similar properties state
+  const [similarProperties, setSimilarProperties] = useState<Property[]>([]);
 
   // Photo gallery modal state
   const [isGalleryOpen, setIsGalleryOpen] = useState<boolean>(false);
@@ -67,6 +43,54 @@ function PropertyDetailClient({ propertyId }: { propertyId: string }) {
 
   // Auth context for user info
   const { user } = useAuth();
+
+  // Fetch property details
+  useEffect(() => {
+    const fetchProperty = async () => {
+      try {
+        setPropertyLoading(true);
+        const response = await getPropertyById(propertyId);
+        setPropertyData(response);
+        setPropertyError(!response.success);
+      } catch (error) {
+        console.error('Error fetching property:', error);
+        setPropertyError(true);
+      } finally {
+        setPropertyLoading(false);
+      }
+    };
+
+    if (propertyId) {
+      fetchProperty();
+    }
+  }, [propertyId]);
+
+  // Fetch similar properties when property data is available
+  useEffect(() => {
+    const fetchSimilarProperties = async () => {
+      if (!propertyData?.data) return;
+
+      try {
+        const response = await getProperties({
+          type: propertyData.data.property_type,
+          bedrooms: propertyData.data.bedrooms,
+          isOffplan: false,
+        });
+        
+        if (response.properties) {
+          // Filter out the current property and limit to 3
+          const filtered = response.properties
+            .filter((p: Property) => p.id !== propertyData.data.id)
+            .slice(0, 3);
+          setSimilarProperties(filtered);
+        }
+      } catch (error) {
+        console.error('Error fetching similar properties:', error);
+      }
+    };
+
+    fetchSimilarProperties();
+  }, [propertyData]);
 
   // Remove global chatbot when on property page to use the property-specific one
   useEffect(() => {
@@ -110,7 +134,6 @@ function PropertyDetailClient({ propertyId }: { propertyId: string }) {
   }
 
   const property = propertyData.data;
-  const similarProperties = similarData?.properties?.filter((p: { id: string }) => p.id !== property.id).slice(0, 3) || [];
 
   // Handle form input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -507,7 +530,6 @@ function PropertyDetailClient({ propertyId }: { propertyId: string }) {
                       fill
                       sizes="(max-width: 768px) 100vw, 64px"
                       className="object-contain"
-
                     />
                   </div>
                 ) : (
@@ -544,13 +566,11 @@ function PropertyDetailClient({ propertyId }: { propertyId: string }) {
             <div className="flex items-center p-4 bg-gray-50 rounded-lg border border-gray-100 mb-5">
               <div className="relative h-16 w-16 rounded-full overflow-hidden mr-4 border-2 border-gray-200">
                 <Image
-                  // src={getFullImageUrl(property.agent?.avatar || 'https://randomuser.me/api/portraits/men/32.jpg')}
                   src="/images/psq.jpg"
                   alt={property.agent?.name ? property.agent.name : 'Real Estate Agent'}
                   fill
                   sizes="(max-width: 768px) 100vw, 64px"
                   className="object-cover"
-
                 />
               </div>
               <div>
@@ -810,7 +830,6 @@ function PropertyDetailClient({ propertyId }: { propertyId: string }) {
     </>
   );
 }
-
 
 // Server component that passes the ID to the client component
 export default function PropertyDetailPage({ params }: { params: Promise<{ id: string }> }) {

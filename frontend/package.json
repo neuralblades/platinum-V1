@@ -13,7 +13,6 @@
     "@headlessui/react": "^2.2.2",
     "@next/swc-linux-x64-gnu": "^15.3.5",
     "@supabase/supabase-js": "^2.50.3",
-    "@tanstack/react-query": "^5.81.5",
     "axios": "^1.8.4",
     "bcryptjs": "^3.0.2",
     "date-fns": "^4.1.0",

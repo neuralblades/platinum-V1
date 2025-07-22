@@ -1,7 +1,7 @@
 // hooks/usePropertyData.ts
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
 import { getPropertyById } from '@/services/propertyService';
 import { getDeveloperById } from '@/services/developerService';
 import { Property, Developer } from '../types/property.types';
@@ -14,43 +14,73 @@ interface UsePropertyDataReturn {
 }
 
 export function usePropertyData(propertyId: string): UsePropertyDataReturn {
-  const {
-    data: propertyData,
-    isLoading: propertyLoading,
-    isError: propertyError,
-  } = useQuery({
-    queryKey: ['property', propertyId],
-    queryFn: async () => {
-      if (!propertyId) throw new Error('Invalid property ID');
-      const response = await getPropertyById(propertyId);
-      if (!response.success || !response.data) throw new Error('Property not found');
-      if (!response.data.is_offplan) throw new Error('This is not an offplan property');
-      return response.data as Property;
-    },
-  });
+  const [property, setProperty] = useState<Property | null>(null);
+  const [developer, setDeveloper] = useState<Developer | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const developerId = propertyData?.developer?.id;
-  const {
-    data: developerData,
-    isLoading: developerLoading,
-    isError: developerError,
-  } = useQuery({
-    queryKey: ['developer', developerId],
-    queryFn: async () => {
-      if (!developerId) return null;
-      const response = await getDeveloperById(developerId);
-      if (!response.success || !response.data) return null;
-      return response.data as Developer;
-    },
-    enabled: !!developerId,
-  });
+  useEffect(() => {
+    const fetchPropertyData = async () => {
+      if (!propertyId) {
+        setError('Invalid property ID');
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Fetch property data
+        const propertyResponse = await getPropertyById(propertyId);
+        
+        if (!propertyResponse.success || !propertyResponse.data) {
+          throw new Error('Property not found');
+        }
+        
+        if (!propertyResponse.data.is_offplan) {
+          throw new Error('This is not an offplan property');
+        }
+        
+        const propertyData = propertyResponse.data as Property;
+        setProperty(propertyData);
+        
+        // Fetch developer data if property has developer
+        const developerId = propertyData?.developer?.id;
+        if (developerId) {
+          try {
+            const developerResponse = await getDeveloperById(developerId);
+            if (developerResponse.success && developerResponse.data) {
+              setDeveloper(developerResponse.data as Developer);
+            } else {
+              setDeveloper(null);
+            }
+          } catch (developerError) {
+            console.error('Error fetching developer:', developerError);
+            // Don't set error for developer fetch failure, just set developer to null
+            setDeveloper(null);
+          }
+        } else {
+          setDeveloper(null);
+        }
+        
+      } catch (err) {
+        console.error('Error fetching property data:', err);
+        setError(err instanceof Error ? err.message : String(err));
+        setProperty(null);
+        setDeveloper(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPropertyData();
+  }, [propertyId]);
 
   return {
-    property: propertyData || null,
-    developer: developerData || null,
-    loading: propertyLoading || developerLoading,
-    error: propertyError ? (propertyError instanceof Error ? propertyError.message : String(propertyError))
-      : developerError ? (developerError instanceof Error ? developerError.message : String(developerError))
-      : null,
+    property,
+    developer,
+    loading,
+    error,
   };
 }

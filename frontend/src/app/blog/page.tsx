@@ -1,13 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import BlogCard from '@/components/blog/BlogCard';
 import BlogSidebar from '@/components/blog/BlogSidebar';
 import { getBlogPosts, BlogPost, BlogFilter } from '@/services/blogService';
 import Breadcrumb from '@/components/ui/Breadcrumb';
-import { useQuery } from '@tanstack/react-query';
 
 const BlogPage: React.FC = () => {
   const searchParams = useSearchParams();
@@ -18,30 +17,48 @@ const BlogPage: React.FC = () => {
   const search = searchParams.get('search') || undefined;
   const page = parseInt(searchParams.get('page') || '1');
 
-  const filters: BlogFilter = {
-    page,
-    limit: 9,
-    category,
-    tag,
-    search,
-    status: 'published',
-  };
+  // State management
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [totalPages, setTotalPages] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [totalPosts, setTotalPosts] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const { data = { posts: [], totalPages: 1, currentPage: 1, hasMore: false, count: 0, message: '' }, isLoading, isError } = useQuery({
-    queryKey: ['blogPosts', filters],
-    queryFn: () => getBlogPosts(filters),
-  });
+  useEffect(() => {
+    const fetchBlogPosts = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        const filters: BlogFilter = {
+          page,
+          limit: 9,
+          category,
+          tag,
+          search,
+          status: 'published',
+        };
+        
+        const data = await getBlogPosts(filters);
+        
+        setPosts(data.posts || []);
+        setTotalPages(data.totalPages || 1);
+        setCurrentPage(data.currentPage || 1);
+        setHasMore(data.hasMore || false);
+        setTotalPosts(data.count || 0);
+      } catch (err) {
+        console.error('Error fetching blog posts:', err);
+        setError('Failed to load blog posts.');
+        setPosts([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const posts: BlogPost[] = data?.posts || [];
-  const totalPages: number = data?.totalPages || 1;
-  const currentPage: number = data?.currentPage || 1;
-  const hasMore: boolean = data?.hasMore || false;
-  const totalPosts: number = data?.count || 0;
-
-  function hasMessage(obj: unknown): obj is { message: string } {
-    return typeof obj === 'object' && obj !== null && 'message' in (obj as Record<string, unknown>) && typeof (obj as Record<string, unknown>).message === 'string';
-  }
-  const error: string | null = isError ? (hasMessage(data) ? data.message : 'Failed to load blog posts.') : null;
+    fetchBlogPosts();
+  }, [page, category, tag, search]); // Keep original dependencies
 
   // Generate pagination links
   const getPaginationLinks = () => {
@@ -140,7 +157,7 @@ const BlogPage: React.FC = () => {
                   />
                 ))}
               </div>
-            ) : isError ? (
+            ) : error ? (
               <div>
                 <div className="rounded-lg bg-red-50 p-4 text-red-800">
                   <p>{error}</p>
