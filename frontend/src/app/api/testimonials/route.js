@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { db } from '@/lib/supabase';
 
 // In-memory cache for testimonials
 const cache = new Map();
