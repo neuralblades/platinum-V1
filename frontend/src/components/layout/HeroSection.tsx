@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import IntegratedSearchFilters from '@/components/search/IntegratedSearchFilters';
 import SearchInput from '@/components/search/SearchInput';
@@ -8,6 +8,9 @@ import { PropertyFilter } from '@/services/propertyService';
 
 const HeroSection = () => {
   const router = useRouter();
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [videoLoaded, setVideoLoaded] = useState(false);
+  const [videoError, setVideoError] = useState(false);
   const [filters, setFilters] = useState<PropertyFilter>({
     location: '',
     type: '',
@@ -16,26 +19,60 @@ const HeroSection = () => {
     keyword: '',
   });
 
+  const handleVideoLoad = () => {
+    console.log('Video loaded successfully');
+    setVideoLoaded(true);
+  };
+
+  const handleVideoError = () => {
+    console.error('Video failed to load, using fallback image');
+    setVideoError(true);
+  };
+
   return (
-    <div className="relative text-white overflow-hidden">
-      {/* Video Background */}
-      <div className="absolute inset-0 w-full h-full z-0">
+    <div className="relative text-white overflow-hidden min-h-screen">
+      {/* Background Image - Always visible first */}
+      <div 
+        className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url('/Dubai.png')`,
+        }}
+      />
+
+      {/* Video Background - Loads over image */}
+      {!videoError && (
         <video
+          ref={videoRef}
           autoPlay
           muted
           loop
           playsInline
-          className="absolute inset-0 w-full h-full object-cover"
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
+            videoLoaded ? 'opacity-100' : 'opacity-0'
+          }`}
+          onLoadedData={handleVideoLoad}
+          onError={handleVideoError}
+          onCanPlay={() => console.log('Video can play')}
         >
-          <source src="Dubai.png" type="image/png" />
-          {/* Fallback for browsers that don't support webm */}
+          <source src="/videos/Dubai.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
-        {/* Overlay to make text more readable */}
-        <div className="absolute inset-0 bg-black/30"></div>
-      </div>
+      )}
 
-      <div className="w-full relative z-10 py-20 md:py-65 flex flex-col items-center opacity-100 transition-opacity duration-800">
+      {/* Overlay to make text more readable */}
+      <div className="absolute inset-0 bg-black/30"></div>
+
+      {/* Optional: Loading indicator */}
+      {!videoLoaded && !videoError && (
+        <div className="absolute top-4 right-4 z-20">
+          <div className="flex items-center space-x-2 bg-black/50 px-3 py-2 rounded-full text-sm">
+            <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            <span className="text-white text-xs">Loading video...</span>
+          </div>
+        </div>
+      )}
+
+      <div className="w-full relative z-10 py-20 md:py-65 flex flex-col items-center opacity-100 transition-opacity duration-800 min-h-screen justify-center">
         {/* Hero Text - Centered */}
         <div className="text-center mb-8 px-4">
           <div className="animate-fade-in-up delay-0.3">
