@@ -17,8 +17,8 @@ const HeroSection = () => {
   });
 
   return (
-    <div className="relative text-white overflow-hidden min-h-screen">
-      {/* Video Background */}
+    <div className="relative text-white overflow-hidden" style={{ height: '80vh' }}>
+      {/* Video Background - 80% of screen height */}
       <video
         autoPlay
         muted
@@ -35,7 +35,7 @@ const HeroSection = () => {
       {/* Overlay to make text more readable */}
       <div className="absolute inset-0 bg-black/30"></div>
 
-      <div className="w-full relative z-10 py-20 md:py-65 flex flex-col items-center opacity-100 transition-opacity duration-800 min-h-screen justify-center">
+      <div className="w-full relative z-10 py-20 md:py-32 flex flex-col items-center opacity-100 transition-opacity duration-800 h-full justify-center">
         {/* Hero Text - Centered */}
         <div className="text-center mb-8 px-4">
           <div className="animate-fade-in-up delay-0.3">
