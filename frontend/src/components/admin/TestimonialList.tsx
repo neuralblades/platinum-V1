@@ -32,7 +32,7 @@ export default function TestimonialList() {
     try {
       setLoading(true);
       const response = await getAllTestimonials();
-      setTestimonials(response.testimonials);
+      setTestimonials(response.data || []);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching testimonials:', error);
