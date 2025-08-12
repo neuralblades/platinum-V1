@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import supabase from '@/lib/supabase';
 
 // In-memory cache for team members
 const cache = new Map();
