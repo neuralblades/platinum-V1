@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import supabase from '@/lib/supabase';
 
 // Rate limiting store
 const rateLimit = new Map();
@@ -38,9 +39,6 @@ export async function GET(request) {
     const limit = parseInt(searchParams.get('limit')) || 10;
     const status = searchParams.get('status');
     const search = searchParams.get('search');
-    
-    
-    
 
     // Build Supabase query
     let query = supabase
@@ -63,7 +61,22 @@ export async function GET(request) {
 
     const { data: rows, error, count } = await query;
 
-    if (error) throw error;
+    if (error) {
+      // If table doesn't exist, return empty data
+      if (error.message.includes('does not exist')) {
+        return NextResponse.json({
+          success: true,
+          data: [],
+          pagination: {
+            currentPage: page,
+            totalPages: 0,
+            totalItems: 0,
+            itemsPerPage: limit
+          }
+        });
+      }
+      throw error;
+    }
 
     const totalPages = Math.ceil(count / limit);
 
@@ -103,9 +116,6 @@ export async function POST(request) {
 
   try {
     const body = await request.json();
-    
-    
-    
 
     // Validate required fields
     const requiredFields = ['name', 'email', 'phone', 'projectInterest'];

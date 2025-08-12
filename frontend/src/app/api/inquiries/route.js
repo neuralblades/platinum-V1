@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import supabase from '@/lib/supabase';
 
 // Rate limiting store
 const rateLimit = new Map();
