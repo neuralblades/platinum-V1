@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import supabase from '@/lib/supabase';
 
 // Rate limiting store
 const rateLimit = new Map();
@@ -38,36 +39,50 @@ export async function GET(request) {
     const limit = parseInt(searchParams.get('limit')) || 10;
     const status = searchParams.get('status');
     const search = searchParams.get('search');
-    
-    
-    
 
-    // Build where clause
-    const whereClause = {};
+    // Build Supabase query
+    let query = supabase
+      .from('document_requests')
+      .select('*', { count: 'exact' });
+
+    // Apply filters
     if (status) {
-      whereClause.status = status;
+      query = query.eq('status', status);
     }
     if (search) {
-      whereClause[db.Sequelize.Op.or] = [
-        { name: { [db.Sequelize.Op.iLike]: `%${search}%` } },
-        { email: { [db.Sequelize.Op.iLike]: `%${search}%` } },
-        { phone: { [db.Sequelize.Op.iLike]: `%${search}%` } }
-      ];
+      query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%,phone.ilike.%${search}%`);
     }
 
+    // Apply pagination
     const offset = (page - 1) * limit;
-    const { count, rows } = await DocumentRequest.findAndCountAll({
-      where: whereClause,
-      order: [['createdAt', 'DESC']],
-      limit,
-      offset
-    });
+    query = query
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    const { data: rows, error, count } = await query;
+
+    if (error) {
+      // If table doesn't exist, return empty data
+      if (error.message.includes('does not exist')) {
+        return NextResponse.json({
+          success: true,
+          data: [],
+          pagination: {
+            currentPage: page,
+            totalPages: 0,
+            totalItems: 0,
+            itemsPerPage: limit
+          }
+        });
+      }
+      throw error;
+    }
 
     const totalPages = Math.ceil(count / limit);
 
     return NextResponse.json({
       success: true,
-      data: rows,
+      data: rows || [],
       pagination: {
         currentPage: page,
         totalPages,
@@ -101,9 +116,6 @@ export async function POST(request) {
 
   try {
     const body = await request.json();
-    
-    
-    
 
     // Validate required fields
     const requiredFields = ['name', 'email', 'phone', 'documentType'];
@@ -133,16 +145,22 @@ export async function POST(request) {
     }
 
     // Create document request
-    const documentRequest = await DocumentRequest.create({
-      name: body.name.trim(),
-      email: body.email.toLowerCase().trim(),
-      phone: body.phone.trim(),
-      documentType: body.documentType.trim(),
-      propertyReference: body.propertyReference || null,
-      additionalInfo: body.additionalInfo || null,
-      status: 'pending',
-      source: body.source || 'website'
-    });
+    const { data: documentRequest, error: createError } = await supabase
+      .from('document_requests')
+      .insert({
+        name: body.name.trim(),
+        email: body.email.toLowerCase().trim(),
+        phone: body.phone.trim(),
+        document_type: body.documentType.trim(),
+        property_reference: body.propertyReference || null,
+        additional_info: body.additionalInfo || null,
+        status: 'pending',
+        source: body.source || 'website'
+      })
+      .select()
+      .single();
+
+    if (createError) throw createError;
 
     return NextResponse.json(
       {
@@ -156,15 +174,13 @@ export async function POST(request) {
   } catch (error) {
     console.error('Document Request Creation Error:', error);
     
-    if (error.name === 'SequelizeValidationError') {
+    // Handle Supabase-specific errors
+    if (error.code === '23502') { // PostgreSQL not null constraint violation
       return NextResponse.json(
         {
           success: false,
-          message: 'Validation error',
-          errors: error.errors.map(err => ({
-            field: err.path,
-            message: err.message
-          }))
+          message: 'Missing required fields',
+          error: process.env.NODE_ENV === 'development' ? error.message : 'Validation error'
         },
         { status: 400 }
       );
